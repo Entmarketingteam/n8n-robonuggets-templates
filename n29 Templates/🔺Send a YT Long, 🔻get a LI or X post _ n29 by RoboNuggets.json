@@ -1,0 +1,286 @@
+{
+  "name": "🔺Send a YT Long, 🔻get a LI or X post | n29 by RoboNuggets",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-pro-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-pro-preview"
+        },
+        "text": "=Analyze this video and output a LinkedIn post in the style below. Provide 3 main takeaways and use 1 or 2 emojis. Output just the LinkedIn post and nothing else.\n\n\n\n# PERSONALITY\nUse my personality to amend the writing style below. My personality is described in these points:\n\nYou write in clean fifth grade English, but you drop in complex words when they serve the point.\n\nYou stay practical and logical, almost like you are thinking out loud while cutting anything that slows the idea.\n\nYou use sharp structure and spacing so the reader never wonders what you mean.\n\nYou expect tight reasoning and no fluff, but you still like smart analogies that feel earned, not cliché.\n\nYou sound like someone who builds things: direct, curious, and focused on what works in the real world.\n\n# WRITING STYLE\n\nHere’s how you always write:\n\n<writing_style>\n\n- Your writing style is spartan and informative.\n- Use clear, simple language.\n- Employ short, impactful sentences.\n- Incorporate bullet points for easy readability.\n- Use frequent line breaks to separate ideas.\n- Use active voice; avoid passive voice.\n- Focus on practical, actionable insights.\n- Use specific examples and personal experiences to illustrate points.\n- Incorporate data or statistics to support claims when possible.\n- Ask thought-provoking questions to encourage reader reflection.\n- Use \"\"you\"\" and \"\"your\"\" to directly address the reader.\n- Avoid metaphors and clichés.\n- Avoid generalizations.\n- Do not include common setup language in any sentence, including: in conclusion, in closing, etc.\n- Do not output warnings or notes—just the output requested.\n- Do not use hashtags.\n- Do not use semicolons.\n- Do not use emojis.\n- Do not use asterisks.\n- Do not use adjectives and adverbs.\n- Do NOT use these words:\n\"\"\"\"\"\"can, may, just, that, very, really, literally, actually, certainly, probably, basically, could, maybe, delve, embark, enlightening, esteemed, shed light, craft, crafting, imagine, realm, game-changer, unlock, discover, skyrocket, abyss, you're not alone, in a world where, revolutionize, disruptive, utilize, utilizing, dive deep, tapestry, illuminate, unveil, pivotal, enrich, intricate, elucidate, hence, furthermore, realm, however, harness, exciting, groundbreaking, cutting-edge, remarkable, it. remains to be seen, glimpse into, navigating, landscape, stark, testament, in summary, in conclusion, moreover, boost, bustling, opened up, powerful, inquiries, ever-evolving\"\"\"\"\"\"",
+        "videoUrls": "={{ $json.message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        0
+      ],
+      "id": "37dde418-3de5-417f-bf76-4b592ebeffb6",
+      "name": "Analyze video3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Uf69yXezkjIZP6Ah",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# 🔺Send a YT Long, 🔻get a LI or X post",
+        "height": 128,
+        "width": 800,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "fdbf7068-c10a-402d-af93-ba645634bb46",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "platform": "linkedin",
+        "accountId": {
+          "__rl": true,
+          "value": "111",
+          "mode": "id"
+        },
+        "postContentText": "={{ $json.content.parts[0].text }}\n\n{{ $('Telegram Trigger2').item.json.message.text }}",
+        "postContentMediaUrls": "=",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        0
+      ],
+      "id": "ed943b60-7d1b-495c-a05c-c7a7741ee17f",
+      "name": "LinkedIn",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "platform": "twitter",
+        "accountId": {
+          "__rl": true,
+          "value": "111",
+          "mode": "id"
+        },
+        "postContentText": "={{ $json.content.parts[0].text }}\n\n{{ $('Telegram Trigger3').item.json.message.text }}",
+        "postContentMediaUrls": "=",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        192
+      ],
+      "id": "c163b0a8-2a97-4962-b2c1-dbe639ead76e",
+      "name": "Twitter",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        0
+      ],
+      "id": "368aa7db-4aaf-427b-bbe5-7b710daf00c2",
+      "name": "Telegram Trigger2",
+      "webhookId": "13b784b6-cb43-47e0-9dea-2d5d8ebb7555",
+      "credentials": {
+        "telegramApi": {
+          "id": "lQn98mDFXokupopl",
+          "name": "Robo Tutorials Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-pro-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-pro-preview"
+        },
+        "text": "=Analyze this video and output a Tweet  in the style below. Provide only ONE most meaningful takeaway or quote and say it in an unexpected way. Add 1 or 2 emojis where relevant\n\nThe final output should be less than 200 characters. Output just the tweet and nothing else.\n\nStart with something like \"I watched this video/podcast about [topic] so you don't have to. Here's what struck me most\" but make it shorter\n\n***\n\n\n\n# PERSONALITY\nUse my personality to amend the writing style below. My personality is described in these points:\n\nYou write in clean fifth grade English, but you drop in complex words when they serve the point.\n\nYou stay practical and logical, almost like you are thinking out loud while cutting anything that slows the idea.\n\nYou use sharp structure and spacing so the reader never wonders what you mean.\n\nYou expect tight reasoning and no fluff, but you still like smart analogies that feel earned, not cliché.\n\nYou sound like someone who builds things: direct, curious, and focused on what works in the real world.\n\n# WRITING STYLE\n\nHere’s how you always write:\n\n<writing_style>\n\n- Use clear, simple language.\n- Use active voice; avoid passive voice.\n- Focus on practical, actionable insights.\n- Ask thought-provoking questions to encourage reader reflection.\n- Use \"\"you\"\" and \"\"your\"\" to directly address the reader.\n- Do not include common setup language in any sentence, including: in conclusion, in closing, etc.\n- Do not output warnings or notes—just the output requested.\n- Do not use hashtags.\n- Do not use semicolons.\n- Do not use asterisks.\n- Do NOT use these words:\n\"\"\"\"\"\"can, may, just, that, very, really, literally, actually, certainly, probably, basically, could, maybe, delve, embark, enlightening, esteemed, shed light, craft, crafting, imagine, realm, game-changer, unlock, discover, skyrocket, abyss, you're not alone, in a world where, revolutionize, disruptive, utilize, utilizing, dive deep, tapestry, illuminate, unveil, pivotal, enrich, intricate, elucidate, hence, furthermore, realm, however, harness, exciting, groundbreaking, cutting-edge, remarkable, it. remains to be seen, glimpse into, navigating, landscape, stark, testament, in summary, in conclusion, moreover, boost, bustling, opened up, powerful, inquiries, ever-evolving\"\"\"\"\"\"",
+        "videoUrls": "={{ $json.message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        192
+      ],
+      "id": "81032947-e0ea-42d5-bb53-b58f58611e86",
+      "name": "Analyze video4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Uf69yXezkjIZP6Ah",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1360,
+        192
+      ],
+      "id": "8c3234bf-a60e-4e86-9d31-ba15093b4671",
+      "name": "Telegram Trigger3",
+      "webhookId": "13b784b6-cb43-47e0-9dea-2d5d8ebb7555",
+      "credentials": {
+        "telegramApi": {
+          "id": "lQn98mDFXokupopl",
+          "name": "Robo Tutorials Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## CREATE POST",
+        "height": 288,
+        "width": 160,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1504,
+        -272
+      ],
+      "id": "5a0a5f4a-520e-48e1-a223-2c585572b908",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## INPUT",
+        "height": 192,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        -176
+      ],
+      "id": "529d8761-a039-4a31-bb16-ae059fb1de23",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## OUTPUT",
+        "height": 192,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        -176
+      ],
+      "id": "93ae9525-6f5a-4cf0-b15c-743fbca7e2cb",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Analyze video3": {
+      "main": [
+        [
+          {
+            "node": "LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger2": {
+      "main": [
+        [
+          {
+            "node": "Analyze video3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze video4": {
+      "main": [
+        [
+          {
+            "node": "Twitter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger3": {
+      "main": [
+        [
+          {
+            "node": "Analyze video4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6cf58eaa-1295-4051-93bf-5f12f63aba31",
+  "meta": {
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "JiNFMiDKkOzSclC8",
+  "tags": []
+}

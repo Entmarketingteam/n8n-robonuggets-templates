@@ -1,0 +1,539 @@
+{
+  "name": "🔺Send a Tiktok, 🔻get a Sora Vid  | n29 by RoboNuggets",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-pro-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-pro-preview"
+        },
+        "text": "=Analyze this video and make a prompt for Sora out of it in this style. Output JUST the prompt  and nothing else.\n\n***\nRole: You are a Viral Video Prompt Engineer. Rewrite the input video description into a new prompt for a video generator (like Runway or Sora).\n\nRemix Rules:\n\nThe Anchor: Keep the original camera angle, lighting, and specific action exactly the same. If the original zooms in on a face, the new one must too.\n\nThe Swap: Identify the main animal. Replace it with a different, unexpected animal that fits the size constraints. (Example: Swap a Golden Retriever with a Highland Cow).\n\nThe Output: Write a single, highly descriptive prompt. Focus on textures (fur, scales) and realistic lighting.\n\nConstraint: Do not use the original animal species.",
+        "videoUrls": "={{ $json.message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        -160
+      ],
+      "id": "f9f1a0e3-281b-4b1e-a107-11fc63bd11fe",
+      "name": "Analyze video1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Uf69yXezkjIZP6Ah",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1088,
+        -160
+      ],
+      "id": "1bd53781-9488-4911-b0a0-614541bb98b8",
+      "name": "Telegram Trigger1",
+      "webhookId": "13b784b6-cb43-47e0-9dea-2d5d8ebb7555",
+      "credentials": {
+        "telegramApi": {
+          "id": "lQn98mDFXokupopl",
+          "name": "Robo Tutorials Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.kie.ai/api/v1/jobs/recordInfo?taskId={{ $('Create Sora2').item.json.data.taskId }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -512,
+        -160
+      ],
+      "id": "cea0fb7b-05a1-4cb5-aaa4-89c38efd65c6",
+      "name": "Get Video",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "waitBetweenTries": 5000,
+      "executeOnce": false,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GY8EwBg1KMzSwh9X",
+          "name": "Kie AI Credential"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -624,
+        -160
+      ],
+      "id": "56a95014-b387-4876-a332-e89e9c78b0cc",
+      "name": "Wait",
+      "webhookId": "5ec4a5ba-1e7f-4df3-a7b3-14d35e4b7a5b"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a96f17f2-5967-4b13-acc9-4d41f226453b",
+                    "leftValue": "={{ $json.data.state }}",
+                    "rightValue": "=success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "52ad92ea-901f-4af8-a462-84b045dd2803",
+                    "leftValue": "={{ $json.data.state }}",
+                    "rightValue": "ing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -400,
+        -176
+      ],
+      "id": "2459a850-b295-42cb-9b2a-d9b9aed10254",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"model\": \"{{ $json.model === 'sora2-pro' ? ($json.image_reference ? 'sora-2-pro-image-to-video' : 'sora-2-pro-text-to-video') : ($json.image_reference ? 'sora-2-image-to-video' : 'sora-2-text-to-video') }}\",\n  \"input\": {\n    \"prompt\": {{ JSON.stringify($json.content.parts[0].text) }},\n    \"aspect_ratio\": \"portrait\",\n    {{ $json.image_reference ? '\"image_urls\": [\"' + $json.image_reference + '\"],' : '' }}\n    \"remove_watermark\": true{{ $json.model === 'sora2-pro' ? ', \"n_frames\": \"10\", \"size\": \"standard\"' : '' }}\n  }\n}\n",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -736,
+        -160
+      ],
+      "id": "db866e80-f32a-4cec-93d1-5ae698283ec9",
+      "name": "Create Sora2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GY8EwBg1KMzSwh9X",
+          "name": "Kie AI Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "An error occured"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -32
+      ],
+      "id": "c1190b9d-1f3f-4373-aa7d-e3adb50c57fa",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "operation": "sendVideo",
+        "chatId": "={{ $('Telegram Trigger1').item.json.message.from.id }}",
+        "file": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        -192
+      ],
+      "id": "06469908-bda6-4285-a169-4278caf82574",
+      "name": "Send a video",
+      "webhookId": "be1004a8-a91b-4409-ae91-eaef9fd4b00f",
+      "credentials": {
+        "telegramApi": {
+          "id": "rSWai5EUNllXsaLS",
+          "name": "Tutorials Robo Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## CREATE SORA VIDEO",
+        "height": 288,
+        "width": 704,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -944,
+        -416
+      ],
+      "id": "00a771cc-ea40-49f9-83eb-9b972e6f12a8",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## INPUT",
+        "height": 192,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1120,
+        -320
+      ],
+      "id": "4541d55d-f791-4dd4-9c84-b04e35ab7fee",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## OUTPUT",
+        "height": 192,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -320
+      ],
+      "id": "4612fe40-79cc-4d42-893f-ff8fde560f9c",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "# 🔺Send a Tiktok, 🔻get a Sora Vid",
+        "height": 128,
+        "width": 800,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1984,
+        -176
+      ],
+      "id": "bd5e9788-45b2-4cc5-ac52-af986351ae15",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "mediaUrl": "={{ JSON.parse($('Get Video').item.json.data.resultJson).resultUrls[0] }}"
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        80,
+        -192
+      ],
+      "id": "5f39a046-c6c4-452d-88a9-d365e36490c9",
+      "name": "Upload media",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "accountId": {
+          "__rl": true,
+          "value": "4116",
+          "mode": "list",
+          "cachedResultName": "testingprofile13125",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/4116"
+        },
+        "postContentText": "=",
+        "postContentMediaUrls": "={{ $('Upload media').item.json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -384
+      ],
+      "id": "b659703f-a455-4e7d-afbf-9b138af52705",
+      "name": "Instagram [BLOTATO]",
+      "retryOnFail": false,
+      "waitBetweenTries": 5000,
+      "maxTries": 2,
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "platform": "youtube",
+        "accountId": {
+          "__rl": true,
+          "value": "111",
+          "mode": "id"
+        },
+        "postContentText": "= ",
+        "postContentMediaUrls": "={{ $('Upload media').item.json.url }}",
+        "postCreateYoutubeOptionTitle": "=",
+        "postCreateYoutubeOptionPrivacyStatus": "unlisted",
+        "postCreateYoutubeOptionShouldNotifySubscribers": false,
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        304,
+        -192
+      ],
+      "id": "3da32ed4-d339-4c4c-8a1a-58d2c5828052",
+      "name": "Youtube [BLOTATO]",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "platform": "tiktok",
+        "accountId": {
+          "__rl": true,
+          "value": "1111",
+          "mode": "id"
+        },
+        "postContentText": "=",
+        "postContentMediaUrls": "={{ $('Upload media').item.json.url }}",
+        "postCreateTiktokOptionIsAiGenerated": true,
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        304,
+        0
+      ],
+      "id": "62fba13e-47b9-4569-bd13-7ebb7fe52e5f",
+      "name": "Tiktok [BLOTATO]",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Analyze video1": {
+      "main": [
+        [
+          {
+            "node": "Create Sora2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger1": {
+      "main": [
+        [
+          {
+            "node": "Analyze video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Sora2": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload media": {
+      "main": [
+        [
+          {
+            "node": "Instagram [BLOTATO]",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Youtube [BLOTATO]",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tiktok [BLOTATO]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a video": {
+      "main": [
+        [
+          {
+            "node": "Upload media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4fb5cb52-b233-4f2b-b16f-9ec01d13182a",
+  "meta": {
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "E5jCr5AWlqqgJEyc",
+  "tags": []
+}

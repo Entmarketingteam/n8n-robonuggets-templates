@@ -1,0 +1,100 @@
+{
+  "name": "MCP - Nanobanana 1 (by RoboNuggets)",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Nanobanana Pro MCP",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "prompt",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "image_reference_1"
+            },
+            {
+              "fieldLabel": "image_reference_2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -144,
+        1008
+      ],
+      "id": "83582ef4-78c7-4600-84d8-cb1e36245882",
+      "name": "Form",
+      "webhookId": "b248dd27-91dd-46d4-8681-a63337738b0c"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.wavespeed.ai/api/v3/google/nano-banana/edit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"aspect_ratio\": \"4:5\",\n  \"enable_base64_output\": false,\n  \"enable_sync_mode\": true,\n \n  \"output_format\": \"png\",\n  \"prompt\": {{ JSON.stringify($json.prompt) }},\n  \"resolution\": \"2k\"\n\n\n{{ \n    (() => {\n      const imgs = [\n        $json.image_reference_1,\n        $json.image_reference_2,\n        $json.image_reference_3\n      ].filter(Boolean);\n\n      return imgs.length\n        ? `,\n  \"images\": ${JSON.stringify(imgs)}`\n        : \"\";\n    })()\n  }}\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        1008
+      ],
+      "id": "a639eed0-b5ed-49b0-9f55-878f50d87770",
+      "name": "Nanobanana 1 🍌",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IZqnM1MEeUfWcob3",
+          "name": "WaveSpeed Credentials"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Nanobanana 1 🍌",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "versionId": "8e8e4058-116b-4257-b70d-d813fc967892",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "recMLPFZhx9FSgiV",
+  "tags": [
+    {
+      "updatedAt": "2025-12-01T20:41:15.310Z",
+      "createdAt": "2025-12-01T20:41:15.310Z",
+      "id": "RcIOx8EBkEpVtI2r",
+      "name": "mcp"
+    }
+  ]
+}

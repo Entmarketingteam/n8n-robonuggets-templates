@@ -1,0 +1,130 @@
+{
+  "name": "MCP - Post to Instagram (by RoboNuggets)",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "media",
+        "mediaUrl": "={{ $json.media_url }}"
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        224
+      ],
+      "id": "61f6b41f-e8d5-4ed0-ac4e-d882628eed1c",
+      "name": "Upload media",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "accountId": {
+          "__rl": true,
+          "value": "24205",
+          "mode": "list",
+          "cachedResultName": "testingprofile25311",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/24205"
+        },
+        "postContentText": "={{ $('On form submission').item.json.caption }}",
+        "postContentMediaUrls": "={{ $('Upload media').item.json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        0,
+        224
+      ],
+      "id": "7c76df4f-4652-418c-93f3-3f6eada94a33",
+      "name": "Instagram [BLOTATO]",
+      "retryOnFail": false,
+      "waitBetweenTries": 5000,
+      "maxTries": 2,
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "formTitle": "Form",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "media_url"
+            },
+            {
+              "fieldLabel": "caption"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -336,
+        224
+      ],
+      "id": "87dbe438-09ea-4ad0-90ad-23f5df3e5b04",
+      "name": "On form submission",
+      "webhookId": "f3b1cc52-5f8b-41dd-86de-a263ae94af1a"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Upload media": {
+      "main": [
+        [
+          {
+            "node": "Instagram [BLOTATO]",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Upload media",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true
+  },
+  "versionId": "6261ede7-d9b7-4c06-9040-8f63beac1a05",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "sc91Gl2ONwcSoirG",
+  "tags": [
+    {
+      "updatedAt": "2025-12-01T20:41:15.310Z",
+      "createdAt": "2025-12-01T20:41:15.310Z",
+      "id": "RcIOx8EBkEpVtI2r",
+      "name": "mcp"
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "name": "🔺Send a YT Short, 🔻get a Script | n29 by RoboNuggets",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-pro-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-pro-preview"
+        },
+        "text": "=Analyze this video and make a script out of it in this style. Output JUST the script and nothing else.\n\n***\nSTYLE\n\n\nRole: You are a master content strategist. Rewrite the provided input text into a 60-second viral script in the style of Alex Hormozi.\n\nTone and Style Rules:\n\nBe Blunt: Use short, punchy sentences. Avoid fancy vocabulary; use Grade 6 English.\n\nThe Hook: Start with a \"Negative Hook\" or a hard truth. Example: \"Most people stay poor because they do this.\"\n\nThe Logic: Explain the concept using simple math or a \"gym\" analogy. Focus on \"Volume,\" \"Leverage,\" or \"Constraints.\"\n\nNo Fluff: Remove all introductions, greetings, and happy talk. Get straight to the value.\n\nFormatting: Do not use em dashes. Use colons or periods only. Capitalize specific words for emphasis.",
+        "videoUrls": "={{ $json.message.text }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        -16
+      ],
+      "id": "a684f092-d700-46d1-a462-aa2d116f4a67",
+      "name": "Analyze video",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Uf69yXezkjIZP6Ah",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.content.parts[0].text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        -16
+      ],
+      "id": "aa850851-b6ea-4ead-8c13-47ff71e14a80",
+      "name": "Send a text message",
+      "webhookId": "929eea11-7afe-4508-9d7e-3ca611dbae8a",
+      "credentials": {
+        "telegramApi": {
+          "id": "rSWai5EUNllXsaLS",
+          "name": "Tutorials Robo Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        -16
+      ],
+      "id": "e550c77b-eec5-497b-a8e5-d5aa21f63717",
+      "name": "Telegram Trigger",
+      "webhookId": "13b784b6-cb43-47e0-9dea-2d5d8ebb7555",
+      "credentials": {
+        "telegramApi": {
+          "id": "lQn98mDFXokupopl",
+          "name": "Robo Tutorials Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# 🔺Send a YT Short, 🔻get a Script",
+        "height": 112,
+        "width": 624,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -16
+      ],
+      "id": "46d297a0-c77c-4d80-990d-2763f2e0ad5b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## CREATE SCRIPT",
+        "height": 288,
+        "width": 160,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -176
+      ],
+      "id": "7bd66a31-c0dc-45d8-ad02-410e5b3bfa16",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## INPUT",
+        "height": 192,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -80
+      ],
+      "id": "44e4fd54-4d49-43dc-a75e-0dce661bad2d",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## OUTPUT",
+        "height": 192,
+        "width": 150,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        288,
+        -80
+      ],
+      "id": "eec8f27b-2592-47cf-831e-81f1183c3074",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Analyze video": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Analyze video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "39166706-b3ed-4e38-a347-5ee4b666fda6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "E47Y7DFhZR3BOBnC",
+  "tags": []
+}
