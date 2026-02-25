@@ -42,4 +42,3 @@ Import directly into n8n — no folder needed.
 - R-series = full production systems (multi-step, 20-56 nodes)
 - n-series = nano/focused single-purpose agents (7-20 nodes)
 - Most require: OpenAI API, Telegram Bot, and platform-specific credentials
-# SSH test Wed Feb 25 13:39:52 CST 2026
