@@ -1,0 +1,614 @@
+{
+  "name": "RoboNuggets - the new Blotato n8n node (n12)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 12
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2000,
+        1072
+      ],
+      "id": "7a934245-2781-4f99-8eae-d5ee222a4ab9",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "##  The 9-in-1 Publishing Agent Version 2.0 (by RoboNuggets 🥚)",
+        "height": 144,
+        "width": 1340,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        816
+      ],
+      "id": "fa4c3380-474d-4c6e-83cd-bde7723d1006",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "platform": "linkedin",
+        "accountId": {
+          "__rl": true,
+          "value": "123",
+          "mode": "id"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        1232
+      ],
+      "id": "24279734-2a87-4ef1-aed9-c40d7b188786",
+      "name": "👔LinkedIn",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "platform": "facebook",
+        "accountId": {
+          "__rl": true,
+          "value": "123",
+          "mode": "id"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "facebookPageId": {
+          "__rl": true,
+          "value": "130049253738890",
+          "mode": "list",
+          "cachedResultName": "Test brand",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/1092/subaccounts/130049253738890"
+        },
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        1072
+      ],
+      "id": "bb1b3292-f2bf-42f7-9e80-984ba4025dfe",
+      "name": "📘Facebook",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "platform": "tiktok",
+        "accountId": {
+          "__rl": true,
+          "value": "1234",
+          "mode": "id"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "postCreateTiktokOptionIsAiGenerated": "={{ true }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        912
+      ],
+      "id": "a4bcd4ac-64d5-4f57-94e7-82e6432415c9",
+      "name": "🎵Tiktok",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "platform": "threads",
+        "accountId": {
+          "__rl": true,
+          "value": "284",
+          "mode": "list",
+          "cachedResultName": "testingspace54872",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/284"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        1072
+      ],
+      "id": "5f21f017-f147-4d3c-8325-c652b19b1cea",
+      "name": "🧵Threads",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "platform": "twitter",
+        "accountId": {
+          "__rl": true,
+          "value": "123",
+          "mode": "id"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        1072
+      ],
+      "id": "9bb6a72a-3984-439f-b457-3125270b38c0",
+      "name": "✖️Twitter",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "accountId": {
+          "__rl": true,
+          "value": "4116",
+          "mode": "list",
+          "cachedResultName": "testingprofile13125",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/4116"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        912
+      ],
+      "id": "bcb7f752-9167-4c7f-a513-487404c1869c",
+      "name": "📷Instagram",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Platform Specific Notes (from Blotato)\n\n## Tiktok\nYou can post images, videos, and slideshows. Your Tiktok account must be warmed up before using Blotato, otherwise you'll get low views. [Follow this warm up guide](https://help.blotato.com/platforms/tiktok/brand-new-accounts). \n\nCheck out best practices and troubleshooting FAQs:\nhttps://help.blotato.com/platforms/tiktok\n\n## Linkedin\nYou can post text, images, videos, and PDF carousels. Check out best practices and troubleshooting FAQs:\nhttps://help.blotato.com/platforms/linkedin\n\n## Facebook\nYou can post text, images, regular videos, and reels. Check out best practices and troubleshooting FAQs\nhttps://help.blotato.com/platforms/facebook\n\n## Instagram\nYou can post images, reels, stories, and slideshows. Check out best practices and troubleshooting FAQs:\nhttps://help.blotato.com/platforms/instagram\n\n## Twitter\nYou can post text, images, and videos. You can post a long-form thread by clicking \"Show Advanced Settings\". Check out best practices and troubleshooting FAQs:\nhttps://help.blotato.com/platforms/twitter\n\n## Threads\nYou can post text, images, and videos. You can post a long-form thread by clicking \"Show Advanced Settings\". Check out best practices and troubleshooting FAQs:\nhttps://help.blotato.com/platforms/threads\n\n## Bluesky\nYou can post text, images,. You can post a long-form thread by clicking \"Show Advanced Settings\". \nNote: BlueSky accepts only images currently. See here: https://help.blotato.com/tips-and-tricks/social-platform-requirements\n\n\n## Youtube\nYou can post Youtube shorts and long-form videos. You don't need to do anything. Youtube automatically posts Shorts if your video is <2 minutes and 9:16 aspect ratio.\n\nBrand new Youtube accounts are limited to a few posts per day via API. You can still upload manually through Youtube website. This restriction is directly from Youtube and is gradually lifted as you post consistently.\n\nCheck out best practices and troubleshooting FAQs:\nhttps://help.blotato.com/platforms/youtube\n\n## Pinterest\nYou can post image and video pins.\n\nPinterest Board ID:\nGo to Blotato, create a Pinterest post, click Publish, and you'll see your board IDs. Copy board ID to here.\n\nCheck out best practices and troubleshooting FAQs:https://help.blotato.com/tips-and-tricks/social-platform-requirements\n\n\n## Need More Help?\n\nLog into Blotato\nClick support button in bottom right corner.\nSabrina Ramonov🍄 replies within 24 hours most weekdays.",
+        "height": 1696,
+        "width": 704,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        32
+      ],
+      "id": "fb49bdef-6c62-431a-8eca-ab97b47670d5",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1yjsMacKAKNc-cgR6tVncK149sOWAD_G2sytEtSawuA8",
+          "mode": "list",
+          "cachedResultName": "9-in-1 Publishing Agent v2 (by RoboNuggets) | n12",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yjsMacKAKNc-cgR6tVncK149sOWAD_G2sytEtSawuA8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yjsMacKAKNc-cgR6tVncK149sOWAD_G2sytEtSawuA8/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "publishing_status",
+              "lookupValue": "for publishing"
+            }
+          ]
+        },
+        "options": {
+          "returnFirstMatch": true
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1872,
+        1072
+      ],
+      "id": "fb97b60d-1b9d-4627-af30-dd6cea31e4fd",
+      "name": "Get content",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WmDBwEhcrLeG9D67",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "mediaUrl": "={{ $json.contentURL }}"
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1744,
+        1072
+      ],
+      "id": "ce2647b8-c138-4bf9-a397-42d8ee680191",
+      "name": "Ready in Blotato",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1yjsMacKAKNc-cgR6tVncK149sOWAD_G2sytEtSawuA8",
+          "mode": "list",
+          "cachedResultName": "9-in-1 Publishing Agent v2 (by RoboNuggets) | n12",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yjsMacKAKNc-cgR6tVncK149sOWAD_G2sytEtSawuA8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1yjsMacKAKNc-cgR6tVncK149sOWAD_G2sytEtSawuA8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Get content').item.json.id }}",
+            "publishing_status": "done"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contentURL",
+              "displayName": "contentURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publishing_status",
+              "displayName": "publishing_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1040,
+        1232
+      ],
+      "id": "677a82a1-69c9-4e4b-b757-c96d1742ffde",
+      "name": "Update Log",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WmDBwEhcrLeG9D67",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "platform": "bluesky",
+        "accountId": {
+          "__rl": true,
+          "value": "5872",
+          "mode": "list",
+          "cachedResultName": "testbrand13125.bsky.social",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/5872"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        1232
+      ],
+      "id": "ea32acb2-ed02-47ef-af83-8347cc465129",
+      "name": "☁️BlueSky",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# 🍳How to Set Up for Your Own Space  \n**Author:** Jay E from [robonuggets.com](https://robonuggets.com)  \n\n#### This guide shows you how to set up this workflow for your own space. Hope you find this of value!\n\n---\n\n## 🔳 Step 1: Update n8n and Enable Community Nodes  \n#### Go to [n8n Cloud](https://app.n8n.cloud/manage) and make sure your instance is up to date. Then, enable the *Verified Community Nodes* toggle in the settings.\n\n---\n\n## 🔳 Step 2: Install the Blotato Node  \n#### When adding a new node in n8n, search for `Blotato` and install it from the list.\n\n---\n\n## 🔳 Step 3: Connect Your Blotato Credential  \n1. Go to [blotato.com](https://blotato.com/?ref=robonuggets) and create an account.  \n2. If you're signing up for the first time, get the community discount code from  \n   [this link](https://www.skool.com/robonuggets/classroom/536cd17d?md=e87cdb3c59004f9fbb43ba3d96978ad4).  \n3. Get your API key from [this link](https://my.blotato.com/settings/api).  \n4. In n8n, create a new credential using that key and apply it to your Blotato nodes.\n\n---\n\nOptional: Use the node below to extract the download URL from a Google Drive file. Make sure that file is viewable by everyone for it to work.\nts",
+        "height": 1012,
+        "width": 420,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -464,
+        704
+      ],
+      "id": "8eb7f584-6d15-4f8c-a35a-3833835ff8b7",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cfb20a9e-9dae-4836-9cb3-23837b0cbb48",
+              "name": "contentURL",
+              "value": "=https://drive.google.com/uc?export=download&id={{ $('Get content').item.json['contentURL'].match(/https:\\/\\/drive\\.google\\.com\\/file\\/d\\/([A-Za-z0-9_-]+)/)?.[1] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -304,
+        1696
+      ],
+      "id": "2c687b87-fc4c-46e1-ac4f-a4a1d7bf5ec9",
+      "name": "Get Google Drive URL"
+    },
+    {
+      "parameters": {
+        "platform": "youtube",
+        "accountId": {
+          "__rl": true,
+          "value": "123",
+          "mode": "id"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "postCreateYoutubeOptionTitle": "={{ $('Get content').item.json.caption }}",
+        "postCreateYoutubeOptionPrivacyStatus": "unlisted",
+        "postCreateYoutubeOptionShouldNotifySubscribers": false,
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        912
+      ],
+      "id": "5878f0ed-106c-48fd-90ef-bb9fd38b1378",
+      "name": "🔻YouTube",
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "platform": "pinterest",
+        "accountId": {
+          "__rl": true,
+          "value": "228",
+          "mode": "list",
+          "cachedResultName": "testbrand13125",
+          "cachedResultUrl": "https://backend.blotato.com/v2/accounts/228"
+        },
+        "postContentText": "={{ $('Get content').item.json.caption }}",
+        "postContentMediaUrls": "={{ $json.url }}",
+        "pinterestBoardId": {
+          "__rl": true,
+          "value": "1017321072016836595",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@blotato/n8n-nodes-blotato.blotato",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        1232
+      ],
+      "id": "374e4ba9-a486-4a9c-83c2-76a6c7677bf4",
+      "name": "📍 Pinterest",
+      "alwaysOutputData": false,
+      "notesInFlow": false,
+      "credentials": {
+        "blotatoApi": {
+          "id": "kL3kwivG5ErCmAl8",
+          "name": "Blotato account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get content": {
+      "main": [
+        [
+          {
+            "node": "Ready in Blotato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ready in Blotato": {
+      "main": [
+        [
+          {
+            "node": "👔LinkedIn",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📘Facebook",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🎵Tiktok",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🧵Threads",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Log",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "✖️Twitter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📷Instagram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "☁️BlueSky",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "🔻YouTube",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "📍 Pinterest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "daea73b7-b36f-40db-9c34-5968b5434876",
+  "meta": {
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "xNilkfUsjTOUZhMM",
+  "tags": []
+}

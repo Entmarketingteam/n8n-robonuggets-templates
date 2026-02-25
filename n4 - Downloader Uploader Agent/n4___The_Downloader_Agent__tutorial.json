@@ -1,0 +1,204 @@
+{
+  "name": "n4 | The Downloader Agent (tutorial)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -220,
+        -80
+      ],
+      "id": "1c30a2d3-2860-4203-8d56-deffab5a92d4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/clockworks~tiktok-scraper/run-sync-get-dataset-items?token=YOUR_APIFY_API_TOKEN",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n    \"excludePinnedPosts\": true,\n    \"oldestPostDateUnified\": \"1 day\",\n    \"profileScrapeSections\": [\n        \"videos\"\n    ],\n    \"profileSorting\": \"latest\",\n    \"profiles\": [\n        \"your-tiktok-channel-here\"\n    ],\n    \"proxyCountryCode\": \"None\",\n    \"resultsPerPage\": 100,\n    \"shouldDownloadAvatars\": false,\n    \"shouldDownloadCovers\": false,\n    \"shouldDownloadMusicCovers\": false,\n    \"shouldDownloadSlideshowImages\": false,\n    \"shouldDownloadSubtitles\": false,\n    \"shouldDownloadVideos\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        -80
+      ],
+      "id": "f703413e-446a-4210-88e0-b63e5d212863",
+      "name": "Get Latest Tiktoks"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1xVhuP0p3NT6c0wB7tBIwnVzoNHLELftLdRM5QykgoBs",
+          "mode": "list",
+          "cachedResultName": "n4 | Template [File->Make a Copy] ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xVhuP0p3NT6c0wB7tBIwnVzoNHLELftLdRM5QykgoBs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xVhuP0p3NT6c0wB7tBIwnVzoNHLELftLdRM5QykgoBs/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "caption": "={{ $json.text }}",
+            "videoURL": "={{ $json.mediaUrls[0] }}",
+            "original_date": "={{ $json.createTimeISO }}",
+            "publishing_status": "for publishing",
+            "id": "==ROW()-1"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "caption",
+              "displayName": "caption",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "videoURL",
+              "displayName": "videoURL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "original_date",
+              "displayName": "original_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publishing_status",
+              "displayName": "publishing_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        60,
+        -80
+      ],
+      "id": "4f7e6ffc-6ee3-4721-861e-e5fcf53eb43c",
+      "name": "Log to Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "WmDBwEhcrLeG9D67",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🔽 The Downloader Agent (by RoboNuggets)",
+        "height": 80,
+        "width": 540,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        -140
+      ],
+      "id": "bb80bf8b-b3ee-4f43-aebd-750d46aac607",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "# 🍳 How to Set Up for Your Own Space  \n**Author:** Jay E from [robonuggets.com](https://robonuggets.com)\n\n### This guide shows you how to set up your Uploader agent\n\n---\n\n## 🔳 Step 1: Set Up Apify for Your Uploader Agent  \n1. Go to [apify.com](https://www.apify.com?fpr=sffv1) and sign up.  \n2. Once signed in, search for the **tikktok scraper** or use [this link](https://console.apify.com/actors/GdWCkxBtKWOsKjdch) directly.  \n3. Fill in the actor with what your agent needs:  \n   - Channel\n   - Videos needed\n   - and so on\n4. Copy the **JSON config** once the setup is complete.  \n5. In the request URL field, paste your **API endpoint** (the same way shown in the setup video).  \n\n---\n\n## 🔳 Step 2: Set Up the Google Sheet  \n1. Go to [this Google Sheet link](https://docs.google.com/spreadsheets/d/1xVhuP0p3NT6c0wB7tBIwnVzoNHLELftLdRM5QykgoBs/edit?usp=sharing)  \n2. Click **File > Make a copy** to duplicate it into your own Google account.  \n3. Connect this Google Sheet to the workflow above\n---",
+        "height": 820,
+        "width": 500,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        120
+      ],
+      "id": "8e24ce02-0688-431e-9f6a-f0a8596ef0d9",
+      "name": "Sticky Note12"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Latest Tiktoks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Latest Tiktoks": {
+      "main": [
+        [
+          {
+            "node": "Log to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "27dcc64d-9496-471b-bdd8-9b64e7bfa746",
+  "meta": {
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "tp26uQVb8pRMUSR1",
+  "tags": []
+}

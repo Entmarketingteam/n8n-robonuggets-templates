@@ -1,0 +1,608 @@
+{
+  "name": "(Template) Nanobanana 1 - 3 Use Cases by RoboNuggets | n28",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"google/nano-banana-edit\",\n  \"input\": {\n    \"prompt\": {{ JSON.stringify($json['output.prompts']) }},\n    \"output_format\": \"png\",\n    \"image_size\": \"2:3\",\n     \"image_urls\": [\"https://api.telegram.org/file/bot{{ $('Bot ID').item.json['bot id'] }}/{{ $('Get Img Path').item.json.result.file_path }}\"]\n  }\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        384,
+        -80
+      ],
+      "id": "b0014905-2733-4e9a-a2e4-1978d241756e",
+      "name": "Create Image",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GY8EwBg1KMzSwh9X",
+          "name": "Kie AI Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $('Create Image').item.json.data.taskId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        704,
+        -80
+      ],
+      "id": "3cea0240-a8e6-4b82-8d16-006e0320c68f",
+      "name": "Get Image",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GY8EwBg1KMzSwh9X",
+          "name": "Kie AI Credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# Nanobanana 1 🍌",
+        "height": 96,
+        "width": 384,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1184,
+        -80
+      ],
+      "id": "2b76edd5-ea83-462a-80e1-d57cf1f0979f",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        592,
+        -80
+      ],
+      "id": "8bacc2fd-636c-415c-8ff6-0b5a436e4e62",
+      "name": "Wait1",
+      "webhookId": "67e326b5-b6ce-427f-92f3-865aae07d405"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.state }}",
+                    "rightValue": "success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bf05a398-eb00-4e25-8de6-3ae7d10e69dd"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4686d0f8-4428-4d81-9c40-c9d56b69ab02",
+                    "leftValue": "={{ $json.data.state }}",
+                    "rightValue": "ing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        816,
+        -80
+      ],
+      "id": "2b1247e2-04c0-4c63-bb71-9a90c21be9b2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "493c3932-bd76-4de4-baee-87ad3590751d",
+              "name": "bot id",
+              "value": "8490965098:AAGS9v9REVs39gfZsqu5uq-JYy5X2K_5R9Y",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        -80
+      ],
+      "id": "76b2dc2b-10df-482c-a1ec-19eec0dcf078",
+      "name": "Bot ID"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.telegram.org/bot{{ $('Bot ID').item.json['bot id'] }}/getFile?file_id={{ $('Trigger - Nanobanana 1').first(0,0).json.message.photo[1].file_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -528,
+        -80
+      ],
+      "id": "730001dc-86a8-4ca2-b0c6-575de2289fed",
+      "name": "Get Img Path"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $('Trigger - Nanobanana 1').item.json.message.photo[1].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        -80
+      ],
+      "id": "d5973cde-a0f2-456f-9b75-d2c678f381d5",
+      "name": "Download Img",
+      "webhookId": "8036ddf1-628c-4594-aaa0-720f2ca29171",
+      "credentials": {
+        "telegramApi": {
+          "id": "pVHSDgfTE6t8A92D",
+          "name": "nanobanana_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-pro-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-pro-preview"
+        },
+        "inputType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        -80
+      ],
+      "id": "46ea2983-c12b-46dc-ae47-7419f3063ec2",
+      "name": "Analyze Img",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Uf69yXezkjIZP6Ah",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your task: Create image prompts as guided by your system guidelines.\n\nThe number of image prompts you generate should correspond to whatever number the user requests. If no number is specified, just generate 1.\n\n\n\n***\n\n\nThese are the user's instructions\n{{ $('Trigger - Nanobanana 1').first().json.message.caption }}\n\n***\nDescription of the reference image:\n\n\n{{ $json.content.parts[0].text }}\n\n\nUse the think tool to review your output",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=🧭 Agent Selection Instruction\n\nThe agent must first analyze the user's input and determine whether the request relates to wall art, t-shirt designs, or digital stickers. Based on this classification, the agent should apply the appropriate system prompt logic from the corresponding expander:\n\n🖼️ Use the Wall Art Prompt Expander if the request includes phrases like \"poster\", \"printable wall art\", \"wall quote\", or requests for text in framed or typographic style.\n\n👕 Use the T-Shirt Prompt Expander if the request mentions \"shirt\", \"t-shirt\", \"apparel\", \"wearable art\", or includes garment-related terms.\n\n🌸 Use the Digital Stickers Prompt Expander if the request references \"stickers\", \"PDF sheet\", \"cute icons\", \"affirmations\", or mentions grids, cut-outs, or transparent sticker formats.\n\nOnce determined, apply the matching system prompt below and proceed to format the output according to its rules and structure.\n\n\n\n***\n\n\nsystem_prompt: |\n  ## SYSTEM PROMPT: 🌸 Digital Stickers Prompt Expander Agent\n\n  A – Ask:\n    Generate image prompts for sets of digital stickers in printable PDF format.\n\n  G – Guidance:\n    role: Style-matching prompt writer for cohesive sticker sheets\n    output_count: Based on user input (default: 1)\n    character_limit: Up to 1000 characters per image prompt (longer OK if describing multiple stickers)\n    constraints:\n      - Each prompt must describe a set of 9 stickers unless the user specifies a different number\n      - Stickers should be arranged in a 3x3 grid by default\n      - The final output must be a printable PDF with transparent background (no mockups, surfaces, or physical context)\n      - Every prompt must begin with:\n        \"Do not include mockups, surfaces, or scenes. Output must be a printable PDF with transparent background. Arrange 9 stickers in a 3x3 grid. Use the reference image to match illustration style. Then apply the following prompt:\"\n      - Each sticker must be briefly described (e.g. phrase, icon, flower, doodle, or quote)\n      - Use parameter-value structure to guide each prompt\n\n  E – Examples:\n    good_examples:\n      - Do not include mockups, surfaces, or scenes. Output must be a printable PDF with transparent background. Arrange 9 stickers in a 3x3 grid. Use the reference image to match illustration style. Then apply the following prompt: stickers: [1: text: you are magic, 2: icon: smiling sun, 3: phrase: take a break, 4: flower: wild daisy, 5: mushroom: red toadstool, 6: text: be kind to yourself, 7: rainbow: pastel arcs, 8: flower cluster: pink + peach, 9: text: just breathe], theme: affirmations, color_palette: warm neutrals and blush, style: hand-drawn floral doodles, background: transparent\n    bad_examples:\n      - A sticker design for water bottles\n      - One flower with text\n\n  N – Notation:\n    format: JSON\n    example_output: |\n      {\n        \"prompts\": {\n          \"image_prompt_1\": \"Do not include mockups, surfaces, or scenes. Output must be a printable PDF with transparent background. Arrange 9 stickers in a 3x3 grid. Use the reference image to match illustration style. Then apply the following prompt: stickers: [1: text: stay soft, 2: daisy with happy face, 3: rainbow in earth tones, 4: phrase: one day at a time, 5: pink mushroom with polka dots, 6: floral burst of coral and cream, 7: quote: take it slow, 8: sun with smiling face, 9: heart with leaf pattern], theme: cozy affirmations, color_palette: pastel peach + rust, style: hand-drawn, background: transparent\"\n        }\n      }\n\n  T – Tools:\n    You have access to the following tools. Each one is described clearly:\n    - Think Tool: Use this to reflect and reason before responding.\n\n\n\n***\n\n\nsystem_prompt: |\n  ## SYSTEM PROMPT: 🖼️ Wall Art System Prompt Expander Agent\n\n  A – Ask:\n    Generate image prompts for wall art text designs in downloadable PNG format.\n\n  G – Guidance:\n    role: Style-aware formatter for digital art prompts\n    output_count: Based on user input (default: 1)\n    character_limit: No strict limit, but aim for single-line prompts under 300 characters\n    constraints:\n      - The design must always be for a downloadable PNG\n      - Avoid real-life mockups or contextual photo environments (e.g. no sofa, no living room, no decor)\n      - Every prompt must start with this prefix:\n        \"Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt:\"\n      - Prompt body must be structured using parameter-value pairs in this format:\n        \"text: ..., font: ..., design: ..., background: ...\"\n      - If more than one output, each must be a different variation\n\n  E – Examples:\n    good_examples:\n      - Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt: text: Dogs welcome, people tolerated, font: retro serif, design: typographic poster, background: black\n      - Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt: text: Definitely not haunted, font: retro serif, design: typographic poster, background: black\n    bad_examples:\n      - A nice wall art with some text\n      - Poster hanging on a beige couch in a living room\n\n  N – Notation:\n    format: JSON\n    example_output: |\n      {\n        \"prompts\": {\n          \"image_prompt_1\": \"Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt: text: Pants are optional, font: retro serif, design: typographic poster, background: black\",\n          \"image_prompt_2\": \"Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt: text: Welcome-ish, font: retro serif, design: typographic poster, background: black\",\n          \"image_prompt_3\": \"Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt: text: Sorry about the mess, font: retro serif, design: typographic poster, background: black\"\n        }\n      }\n\n  T – Tools:\n    You have access to the following tools. Each one is described clearly:\n    - Think Tool: Use this to reflect and reason before responding.\n\n\n***\n\n\nsystem_prompt: |\n  ## SYSTEM PROMPT: 👕 T-Shirt Prompt Expander Agent\n\n  A – Ask:\n    Generate image prompts for t-shirt graphic designs in downloadable PNG format.\n\n  G – Guidance:\n    role: Style-aware formatter for wearable print prompts\n    output_count: Based on user input (default: 1)\n    character_limit: No strict limit, but aim for single-line prompts under 300 characters\n    constraints:\n      - The final image must be a flat PNG suitable for printing on a t-shirt\n      - Do not include mockups, humans, or apparel context (e.g. not shown on a model or worn)\n      - Every prompt must begin with the following instruction:\n        \"Do not include any mockups, shirts, or models. Final image must be a flat PNG for t-shirt printing. Use the reference image to guide design style. Then apply the following prompt:\"\n      - The rest of the prompt must use structured parameter-value format:\n        \"text: ..., font: ..., design: ..., background: ...\"\n\n  E – Examples:\n    good_examples:\n      - Do not include any mockups, shirts, or models. Final image must be a flat PNG for t-shirt printing. Use the reference image to guide design style. Then apply the following prompt: text: Feast Mode: Activated, font: playful bold, design: cartoon turkey, background: black\n      - Do not include any mockups, shirts, or models. Final image must be a flat PNG for t-shirt printing. Use the reference image to guide design style. Then apply the following prompt: text: Leftovers are for quitters, font: chunky serif, design: thanksgiving cartoon, background: black\n    bad_examples:\n      - Design for a t-shirt slogan\n      - A guy wearing a turkey t-shirt\n\n  N – Notation:\n    format: JSON\n    example_output: |\n      {\n        \"prompts\": {\n          \"image_prompt_1\": \"Do not include any mockups, shirts, or models. Final image must be a flat PNG for t-shirt printing. Use the reference image to guide design style. Then apply the following prompt: text: Gobble till you wobble, font: playful cartoon, design: thanksgiving turkey with leaves, background: black\",\n          \"image_prompt_2\": \"Do not include any mockups, shirts, or models. Final image must be a flat PNG for t-shirt printing. Use the reference image to guide design style. Then apply the following prompt: text: Gravy over everything, font: retro slab serif, design: food pun cartoon, background: black\",\n          \"image_prompt_3\": \"Do not include any mockups, shirts, or models. Final image must be a flat PNG for t-shirt printing. Use the reference image to guide design style. Then apply the following prompt: text: I'm just here for the pie, font: bubbly serif, design: pumpkin pie cartoon, background: black\"\n        }\n      }\n\n  T – Tools:\n    You have access to the following tools. Each one is described clearly:\n    - Think Tool: Use this to reflect and reason before responding.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -80
+      ],
+      "id": "a5aaf41e-42f3-423b-bbcb-e14f11c797e2",
+      "name": "PromptRobo AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Trigger - Nanobanana 1').first().json.message.chat.id }}",
+        "file": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1024,
+        -96
+      ],
+      "id": "843c393c-905b-412d-a564-e8b92deddf9a",
+      "name": "Send",
+      "webhookId": "f5db7a2f-053a-43a8-a97a-a859e90e72ab",
+      "credentials": {
+        "telegramApi": {
+          "id": "pVHSDgfTE6t8A92D",
+          "name": "nanobanana_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.prompts",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -80
+      ],
+      "id": "7744a0d0-0b48-4531-b1cd-5cb5524f099e",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3-pro-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        128
+      ],
+      "id": "5479166d-59c7-4944-a9ad-72562cec505e",
+      "name": "Gemini 3.0",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Uf69yXezkjIZP6Ah",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"prompts\": {\n    \"image_prompt_1\": \"Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt: text: Pants are optional, font: retro serif, design: typographic poster, background: black\",\n    \"image_prompt_2\": \"Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt: text: Welcome-ish, font: retro serif, design: typographic poster, background: black\",\n    \"image_prompt_3\": \"Do not include any mockups, rooms, or real-world objects. Final image must be a flat PNG ready for print. Use the reference image to guide design style. Then apply the following prompt: text: Sorry about the mess, font: retro serif, design: typographic poster, background: black\"\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        160,
+        128
+      ],
+      "id": "d7936c02-e633-48bb-a7b4-5bf942c2dff2",
+      "name": "Structure"
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $json.data.failMsg }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        128
+      ],
+      "id": "ba679095-2f31-4615-86f0-edec459b12b8",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -848,
+        -80
+      ],
+      "id": "4fe8f5e8-f61c-42a2-b90e-d15b3e0a1e98",
+      "name": "Trigger - Nanobanana 1",
+      "webhookId": "102bb681-c45e-432b-b17e-719ae3815e9e",
+      "credentials": {
+        "telegramApi": {
+          "id": "pVHSDgfTE6t8A92D",
+          "name": "nanobanana_bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# 🔺 INPUT",
+        "width": 544,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -688,
+        -208
+      ],
+      "id": "e3d5b7a9-09d9-4528-a956-2a755db01e79",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# Step 1: Create Prompts",
+        "width": 464,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -208
+      ],
+      "id": "9e29555e-918a-43d8-aebb-10355ca136b8",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "# STEP 2: Create Images",
+        "width": 592,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        352,
+        -208
+      ],
+      "id": "eec1adc8-fd22-4dfd-8bcd-887637756820",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "# 🔻 OUTPUT",
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -208
+      ],
+      "id": "d8cefc96-0500-4dc5-b32f-435200a97b28",
+      "name": "Sticky Note6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Create Image": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Get Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bot ID": {
+      "main": [
+        [
+          {
+            "node": "Get Img Path",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Img Path": {
+      "main": [
+        [
+          {
+            "node": "Download Img",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Img": {
+      "main": [
+        [
+          {
+            "node": "Analyze Img",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Img": {
+      "main": [
+        [
+          {
+            "node": "PromptRobo AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PromptRobo AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Create Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 3.0": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "PromptRobo AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "PromptRobo AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger - Nanobanana 1": {
+      "main": [
+        [
+          {
+            "node": "Bot ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "aa75fb83-853e-45f7-98fc-4d00b24203af",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "Vhe1muXkWgph4szk",
+  "tags": []
+}

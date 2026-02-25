@@ -1,0 +1,3121 @@
+{
+  "name": "R52 | Longform AI Explainers System",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.fish.audio/v1/tts",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"text\": {{ JSON.stringify($json.script) }},\n  \"temperature\": 0.8,\n \"reference_id\": \"{{ $('Get Project4').item.json.INPUT_voice_id }}\",\n \"format\": \"mp3\"\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 3000
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        1104
+      ],
+      "id": "d85673b1-4299-45dd-9b45-959ccf2e59f9",
+      "name": "Create Voice",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "uMMq8eUFB6hDwBV6",
+          "name": "Fish Audio Credentials | 2026.01"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Create Script",
+        "height": 128,
+        "width": 272,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        976,
+        1024
+      ],
+      "id": "db066248-d25d-4f63-bfe2-8e978bf98392",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        768
+      ],
+      "id": "5ac4c823-f6af-48c6-bec0-15a42b3ba931",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a script . do only 2 scenes\n\n\n\n***\n\nThe user request for this project is:\n{{ $('Get Project3').item.json.INPUT_Request }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=system_prompt: |\n  ## 🎬 SYSTEM PROMPT: Human Video Script Generator Agent\n\n  A – Ask:\n    Generate a human-sounding video script based on a user request, tone of voice, and desired video length. The script must be segmented, accurately timed, and suitable for spoken delivery.\n\n  G – Guidance:\n    role: Professional video scriptwriter\n    output_count: 1\n    words_per_minute: 150\n    default_video_length_minutes: 2\n    max_segment_length_minutes: 5\n\n    constraints:\n      - Calculate total word count before writing the script\n      - Ensure final output matches the calculated word count exactly\n      - Divide scripts into segments of no more than 5 minutes each\n      - Each segment must be self-contained and flow naturally\n      - Each segment must include a \"scene\" field formatted exactly as: \"<number> - <Short Scene Name>\"\n      - Scene names must be short (2–6 words), clear, and human-friendly\n      - No em dashes\n      - No AI-related phrases or meta commentary\n      - Use natural spoken language with contractions\n      - Avoid filler phrases such as \"in this video\" or \"let’s dive in\"\n      - Output must be valid JSON only, with no markdown or explanations\n\n    tone_rules:\n      - Follow the user-provided tone of voice exactly\n      - If no tone is provided, default to natural human conversational tone\n\n    speech_prompt_rules:\n      - Include a top-level \"speech_prompt\" field in the output\n      - If the user provides a speech or delivery prompt, use it verbatim\n      - If none is provided, default to:\n        \"Natural movements, natural eyebrow motion, minimal gestures, and a professional smiling tone\"\n\n  E – Examples:\n    good_examples: []\n    bad_examples: []\n\n  N – Notation:\n    format: JSON\n    example_output: |\n      {\n        \"total_minutes\": 10,\n        \"speech_prompt\": \"Calm, confident delivery with subtle emphasis and steady pacing.\",\n        \"segments\": [\n          {\n            \"scene\": \"1 - Hook and Setup\",\n            \"duration_minutes\": 5,\n            \"word_count\": 750,\n            \"script\": \"...\"\n          },\n          {\n            \"scene\": \"2 - Key Takeaways\",\n            \"duration_minutes\": 5,\n            \"word_count\": 750,\n            \"script\": \"...\"\n          }\n        ]\n      }\n\n  T – Tools:\n    - Think Tool: Use this to calculate word counts, segment allocation, and internally validate constraints before producing the final output.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        160,
+        928
+      ],
+      "id": "6ecaab91-03a1-4dff-a055-e7404478797b",
+      "name": "AI Agent by RoboNuggets"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-3-pro-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        160,
+        784
+      ],
+      "id": "e4fd4bfa-9396-4beb-a23c-40198dbb22a2",
+      "name": "Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "hmP48RU4dJfJaaSV",
+          "name": "OpenRouter account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"total_minutes\": 10,\n  \"total_word_count\": 1500,\n  \"speech_prompt\": \"Natural movements, natural eyebrow motion, minimal gestures, and a professional smiling tone\",\n  \"segments\": [\n    {\n      \"scene\": \"1 - Opening Hook\",\n      \"duration_minutes\": 5,\n      \"target_word_count\": 750,\n      \"script\": \"Full spoken script text for this scene...\"\n    },\n    {\n      \"scene\": \"2 - Core Message\",\n      \"duration_minutes\": 5,\n      \"target_word_count\": 750,\n      \"script\": \"Full spoken script text for this scene...\"\n    }\n  ]\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        784
+      ],
+      "id": "1ae80433-dbf8-432a-aa43-d4244384785d",
+      "name": "Structure"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.segments",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        400,
+        928
+      ],
+      "id": "022a4636-a66f-4ba7-968d-e26331fbfd34",
+      "name": "Split Out1"
+    },
+    {
+      "parameters": {
+        "content": "## INPUT Section",
+        "height": 80,
+        "width": 272,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        912
+      ],
+      "id": "277db830-4169-4111-9d3a-356ac83be3d4",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "## OUTPUT Section",
+        "height": 80,
+        "width": 272,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        656,
+        912
+      ],
+      "id": "b2a583ef-662d-49fb-b97c-c467b59b7a32",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "## CREATE Section",
+        "height": 256,
+        "width": 480,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        80,
+        640
+      ],
+      "id": "59b280a8-1849-4259-9c0a-64076051968d",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblYiND5DkrZhIlLq",
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblYiND5DkrZhIlLq"
+        },
+        "filterByFormula": "={Status} = \"Create\"",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        1024
+      ],
+      "id": "d3e38588-d12d-468e-8871-fe0457d717d8",
+      "name": "Get Project3",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Create Voice",
+        "height": 128,
+        "width": 272,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        976,
+        1200
+      ],
+      "id": "014c227f-cc27-43db-9de1-c0b0af451ff3",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "## Create Video",
+        "height": 224,
+        "width": 272,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        976,
+        1376
+      ],
+      "id": "a6b14541-c81b-45de-b68c-bb023013bf88",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "content": "## Create BRoll prompts",
+        "height": 128,
+        "width": 272,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        976,
+        1712
+      ],
+      "id": "262d37b2-f87b-4cf4-84ae-20c669ccf5d5",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "content": "## Create BRoll images",
+        "height": 128,
+        "width": 272,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        976,
+        1904
+      ],
+      "id": "969a61ab-8d49-4019-8087-029c083cbf28",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "content": "## Create BRoll videos",
+        "height": 128,
+        "width": 272,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        976,
+        2064
+      ],
+      "id": "4bbf2437-184a-491d-bfa5-40098f2362eb",
+      "name": "Sticky Note15"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        1296
+      ],
+      "id": "1787885e-6d99-41b0-840d-34c913acfac1",
+      "name": "Wait4",
+      "webhookId": "fbd5b4e2-7b8b-4357-9d66-a52bc03af0d4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.wavespeed.ai/api/v3/wavespeed-ai/infinitetalk",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "audio",
+              "value": "={{ $('Get Scenes4').item.json.scene_voice[0].url }}"
+            },
+            {
+              "name": "image",
+              "value": "={{ $('Get Project5').item.json.INPUT_Image_1[0].url }}"
+            },
+            {
+              "name": "prompt",
+              "value": "={{ $('Get Scenes4').item.json.speech_prompt }}"
+            },
+            {
+              "name": "resolution",
+              "value": "480p"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 3000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        1296
+      ],
+      "id": "c8efcc98-95bf-42bf-b751-9da774faaaaa",
+      "name": "Create Video 🔻1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IZqnM1MEeUfWcob3",
+          "name": "WaveSpeed Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Create Video 🔻1').item.json.data.urls.get }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        1296
+      ],
+      "id": "34b0596e-b046-490a-ba89-ec7739845f4a",
+      "name": "Get Video 🔻1",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IZqnM1MEeUfWcob3",
+          "name": "WaveSpeed Credentials"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblipThhapetdSJdm",
+          "mode": "list",
+          "cachedResultName": "Scenes",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblipThhapetdSJdm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "scene_video": "= [   {     \"url\": \"{{ $('Get Video 🔻1').item.json.data.outputs[0] }}\"   } ]",
+            "Status_video": "Done",
+            "id": "={{ $('Get Scenes4').item.json.id }}",
+            "Status_broll": "Create"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Project Name",
+              "displayName": "Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "scene",
+              "displayName": "scene",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "estimate_mins",
+              "displayName": "estimate_mins",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "script",
+              "displayName": "script",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "speech_prompt",
+              "displayName": "speech_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_voice",
+              "displayName": "Status_voice",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "scene_voice",
+              "displayName": "scene_voice",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_video",
+              "displayName": "Status_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "scene_video",
+              "displayName": "scene_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status_broll",
+              "displayName": "Status_broll",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "delete from here",
+              "displayName": "delete from here",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "start_image_prompt",
+              "displayName": "start_image_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "video_prompt",
+              "displayName": "video_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_image",
+              "displayName": "Status_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Archive",
+                  "value": "Archive"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_image",
+              "displayName": "start_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        1360
+      ],
+      "id": "41ab4301-954f-4d43-ae4d-2d2ef89b6c44",
+      "name": "Log Videos1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $('Get Video 🔻1').item.json.data.errorMessage }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        816,
+        1504
+      ],
+      "id": "19735de8-4b60-4472-9ef2-bd0f9ec51422",
+      "name": "Stop and Error1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bf05a398-eb00-4e25-8de6-3ae7d10e69dd"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4686d0f8-4428-4d81-9c40-c9d56b69ab02",
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "ing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        656,
+        1376
+      ],
+      "id": "c665dbb4-6066-4cba-b957-2b17fef2a695",
+      "name": "Switch4"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        1392
+      ],
+      "id": "80e3dd20-b5f1-4c20-a8e5-0cebfa405742",
+      "name": "VIDEOS1"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblipThhapetdSJdm",
+          "mode": "list",
+          "cachedResultName": "Scenes",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblipThhapetdSJdm"
+        },
+        "filterByFormula": "={Status_video} = \"Create\"",
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "scene"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        1392
+      ],
+      "id": "7639077d-eb9a-4d0d-ad2a-b8daed060bfa",
+      "name": "Get Scenes4",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblipThhapetdSJdm",
+          "mode": "list",
+          "cachedResultName": "Scenes",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblipThhapetdSJdm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=",
+            "Project Name": "={{ $('Get Project3').item.json['Project Name'] }}",
+            "scene": "={{ $json.scene }}",
+            "speech_prompt": "={{ $('AI Agent by RoboNuggets').item.json.output.speech_prompt }}",
+            "script": "={{ $json.script }}",
+            "Status_voice": "Create",
+            "estimate_mins": "={{ $json.duration_minutes }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Project Name",
+              "displayName": "Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "scene",
+              "displayName": "scene",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "estimate_mins",
+              "displayName": "estimate_mins",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "script",
+              "displayName": "script",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "speech_prompt",
+              "displayName": "speech_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status_voice",
+              "displayName": "Status_voice",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "scene_voice",
+              "displayName": "scene_voice",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status_video",
+              "displayName": "Status_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "scene_video",
+              "displayName": "scene_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_image_prompt",
+              "displayName": "start_image_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "video_prompt",
+              "displayName": "video_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_image",
+              "displayName": "Status_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Archive",
+                  "value": "Archive"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_image",
+              "displayName": "start_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        1024
+      ],
+      "id": "0baadb92-8621-4e0e-bf34-8a924fe1399b",
+      "name": "Log Script",
+      "executeOnce": false,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblYiND5DkrZhIlLq",
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblYiND5DkrZhIlLq"
+        },
+        "filterByFormula": "{Status} = \"Create\"",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        1200
+      ],
+      "id": "326b22ab-f504-4417-8686-d28b32c78359",
+      "name": "Get Project4",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblipThhapetdSJdm",
+          "mode": "list",
+          "cachedResultName": "Scenes",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblipThhapetdSJdm"
+        },
+        "filterByFormula": "=AND({Status_voice} = \"Create\", {Project Name} = \"{{ $json['Project Name'] }}\")",
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "scene"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        1200
+      ],
+      "id": "512d8c64-6f58-49b6-a0f6-c76f5dc84e4c",
+      "name": "Get Scenes1",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        1200
+      ],
+      "id": "634461ab-64cc-40cb-a7d8-0921338a9356",
+      "name": "VOICE"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblipThhapetdSJdm",
+          "mode": "list",
+          "cachedResultName": "Scenes",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblipThhapetdSJdm"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Get Scenes1').item.json.id }}",
+            "Status_video": "Create",
+            "Status_voice": "Done",
+            "scene_voice": "= [   {     \"url\": \"{{ $json.data.download_url }}\"   } ]"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Project Name",
+              "displayName": "Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "scene",
+              "displayName": "scene",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "speech_prompt",
+              "displayName": "speech_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "script",
+              "displayName": "script",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_voice",
+              "displayName": "Status_voice",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "scene_voice",
+              "displayName": "scene_voice",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status_video",
+              "displayName": "Status_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "scene_video",
+              "displayName": "scene_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_image_prompt",
+              "displayName": "start_image_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "video_prompt",
+              "displayName": "video_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_image",
+              "displayName": "Status_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Archive",
+                  "value": "Archive"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "start_image",
+              "displayName": "start_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        1200
+      ],
+      "id": "beb60fc0-3c65-4c4f-8bf1-0197b8c05397",
+      "name": "Log Voice",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.wavespeed.ai/api/v3/media/upload/binary",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        432,
+        1104
+      ],
+      "id": "2dba7215-3032-4954-a60f-1c101b90e1aa",
+      "name": "Upload Voice",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IZqnM1MEeUfWcob3",
+          "name": "WaveSpeed Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblYiND5DkrZhIlLq",
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblYiND5DkrZhIlLq"
+        },
+        "filterByFormula": "{Status} = \"Create\"",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        1392
+      ],
+      "id": "eb9081fc-0e3f-40d9-8200-cb1dcf287d81",
+      "name": "Get Project5",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        1552
+      ],
+      "id": "c0581727-ed8e-4e33-8708-e095d66b9c55",
+      "name": "Think2"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-3-pro-preview",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        160,
+        1568
+      ],
+      "id": "eb95ab97-775d-4869-9bd8-0a2d820026c0",
+      "name": "Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "hmP48RU4dJfJaaSV",
+          "name": "OpenRouter account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n    \"segments\": [\n      {\n        \"segment\": \"Segment 1 - Example Title\",\n        \"start_image_prompt\": \"Subject:\\nEnvironment:\\nAction:\\nLighting:\\nCamera:\\nMetatokens:\",\n        \"video_prompt\": \"Subject:\\nEnvironment:\\nAction:\\nLighting:\\nCamera:\\nMetatokens:\"\n      }\n    ]\n  }"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        1568
+      ],
+      "id": "35a6f83b-bcae-46bd-8e00-72dbdd37f37b",
+      "name": "Structure2"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.segments",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        464,
+        1712
+      ],
+      "id": "d4a405a7-5b83-4c80-a562-bc51d0fa54dd",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc8oQyblzO8JXjV",
+          "mode": "list",
+          "cachedResultName": "Segments",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblc8oQyblzO8JXjV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "=",
+            "Project Name": "={{ $('Get Project6').item.json['Project Name'] }}",
+            "Scene Name": "={{ $('Get Scenes5').item.json.scene }}",
+            "segment": "={{ $json.segment }}",
+            "image_prompt": "={{ $json.start_image_prompt }}",
+            "video_prompt": "={{ $json.video_prompt }}",
+            "Status_image": "Create"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Project Name",
+              "displayName": "Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Scene Name",
+              "displayName": "Scene Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "segment",
+              "displayName": "segment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "image_prompt",
+              "displayName": "image_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "video_prompt",
+              "displayName": "video_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status_image",
+              "displayName": "Status_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Archive",
+                  "value": "Archive"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "segment_image",
+              "displayName": "segment_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_video",
+              "displayName": "Status_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "segment_video",
+              "displayName": "segment_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        1712
+      ],
+      "id": "703c61fc-6f09-4832-969d-9285a5a041fa",
+      "name": "Log Script1",
+      "executeOnce": false,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblipThhapetdSJdm",
+          "mode": "list",
+          "cachedResultName": "Scenes",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblipThhapetdSJdm"
+        },
+        "filterByFormula": "={Status_broll} = \"Create\"",
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "scene"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        1712
+      ],
+      "id": "85c29315-bcc4-4122-a700-bafa8a18e410",
+      "name": "Get Scenes5",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblYiND5DkrZhIlLq",
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblYiND5DkrZhIlLq"
+        },
+        "filterByFormula": "{Status} = \"Create\"",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        1712
+      ],
+      "id": "00b3d94f-fa24-4f42-817c-e52ec117cea2",
+      "name": "Get Project6",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc8oQyblzO8JXjV",
+          "mode": "list",
+          "cachedResultName": "Segments",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblc8oQyblzO8JXjV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status_image": "Done",
+            "Status_video": "Create",
+            "segment_image": "= [   {     \"url\": \"{{ $('Start frame 🍌1').item.json.data.outputs[0] }}\"   } ]",
+            "id": "={{ $('Get Segments').item.json.id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Project Name",
+              "displayName": "Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Scene Name",
+              "displayName": "Scene Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "segment",
+              "displayName": "segment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "image_prompt",
+              "displayName": "image_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "video_prompt",
+              "displayName": "video_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status_image",
+              "displayName": "Status_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Archive",
+                  "value": "Archive"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "segment_image",
+              "displayName": "segment_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status_video",
+              "displayName": "Status_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "segment_video",
+              "displayName": "segment_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        1888
+      ],
+      "id": "aa59bbb4-f966-43ac-b15e-7bc187ec4f12",
+      "name": "Log Images1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.wavespeed.ai/api/v3/google/nano-banana-pro/edit",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"aspect_ratio\": \"{{ $('Get Project7').item.json.aspect_ratio }}\",\n  \"enable_base64_output\": false,\n  \"enable_sync_mode\": true,\n \n  \"output_format\": \"png\",\n  \"prompt\": {{ JSON.stringify($json.image_prompt) }},\n  \"resolution\": \"2k\",\n  \"images\": [\"{{ $('Get Project7').item.json['INPUT_Image_1'][0].url }}\", \"{{ $('Get Project7').item.json['INPUT_Image_2'][0].url }}\"]\n\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 2000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        1888
+      ],
+      "id": "71a7facd-5c71-4c0a-b294-b4107fa4005c",
+      "name": "Start frame 🍌1",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IZqnM1MEeUfWcob3",
+          "name": "WaveSpeed Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        2064
+      ],
+      "id": "713ee029-b09a-4a0b-867c-4803182f6f14",
+      "name": "Wait5",
+      "webhookId": "fbd5b4e2-7b8b-4357-9d66-a52bc03af0d4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.wavespeed.ai/api/v3/kwaivgi/kling-v2.6-pro/image-to-video",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"cfg_scale\": 0.5,\n  \"duration\": 5,\n  \"image\": \"{{ $json.segment_image[0].url }}\",\n  \"prompt\": {{ JSON.stringify($json.video_prompt) }},\n  \"sound\": false,\n  \"voice_list\": []\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 3000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        2064
+      ],
+      "id": "fa3d42d7-44b8-4bb2-88a7-b5ba0b904841",
+      "name": "Create Video 🔻2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IZqnM1MEeUfWcob3",
+          "name": "WaveSpeed Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data.urls.get }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        2064
+      ],
+      "id": "f74b7b69-a2ea-457f-b326-b84c9a4eab9f",
+      "name": "Get Video 🔻2",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "IZqnM1MEeUfWcob3",
+          "name": "WaveSpeed Credentials"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc8oQyblzO8JXjV",
+          "mode": "list",
+          "cachedResultName": "Segments",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblc8oQyblzO8JXjV"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Get Segments1').item.json.id }}",
+            "Status_video": "Done",
+            "segment_video": "= [   {     \"url\": \"{{ $('Get Video 🔻2').item.json.data.outputs[0] }}\"   } ]"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Project Name",
+              "displayName": "Project Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Scene Name",
+              "displayName": "Scene Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "segment",
+              "displayName": "segment",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "image_prompt",
+              "displayName": "image_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "video_prompt",
+              "displayName": "video_prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_image",
+              "displayName": "Status_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Archive",
+                  "value": "Archive"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "segment_image",
+              "displayName": "segment_image",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status_video",
+              "displayName": "Status_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Create",
+                  "value": "Create"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                },
+                {
+                  "name": "Skip",
+                  "value": "Skip"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "segment_video",
+              "displayName": "segment_video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        816,
+        2032
+      ],
+      "id": "320b2371-5e81-4047-8a6c-602cd7698f03",
+      "name": "Log Videos2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "errorMessage": "={{ $('Get Video 🔻2').item.json.data.errorMessage }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        816,
+        2176
+      ],
+      "id": "39ba4cc1-c6f6-463d-a758-93540b23918d",
+      "name": "Stop and Error2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "completed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bf05a398-eb00-4e25-8de6-3ae7d10e69dd"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4686d0f8-4428-4d81-9c40-c9d56b69ab02",
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "ing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in progress"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        656,
+        2048
+      ],
+      "id": "03bd10ea-bf92-40e3-9a6d-fa169480fb90",
+      "name": "Switch5"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of items) {\n  if (item.binary?.data) {\n    item.binary.data.fileName = 'tts.mp3';\n  }\n}\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        1104
+      ],
+      "id": "85ff9807-866c-4e01-80ec-8c30f4fa0325",
+      "name": "rename mp3"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3-pro-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3-pro-preview"
+        },
+        "text": "Focus on the design type and theme of this image. Rather than the content of the text and the elements in it.\n\n\nsystem_prompt: |\n\n🎬 SYSTEM PROMPT: SEALCaM Scene Analyzer\n\nYou are a professional video analysis agent specializing in cinematic, commercial, and digital media breakdowns.\nYour purpose is to analyze a video and dissect it into clear, sequential scenes using the SEALCaM framework, expressed strictly in cinema and photography terminology.\n\nAt the top of the output, you must first analyze any music and spoken script present in the video before listing scenes.\n\n🅰️ A – Ask:\n\nAnalyze the provided video and produce the following sections in order:\n\nMusic Analysis\n\nDescribe the music used in the video if present\n\nUse audio and film-scoring terms only: genre, tempo, rhythm, dynamics, instrumentation, mix density, pacing\n\nAvoid emotional interpretation unless directly implied by tempo or arrangement\n\nIf no music is present, output: \"No music\"\n\nScript Transcript\n\nTranscribe all spoken words exactly as heard\n\nPreserve pauses using ellipses\n\nDo not paraphrase\n\nIf no spoken words are present, output: \"No script\"\n\nScene Analysis\n\nItemize the video into distinct scenes\n\nFor each scene, produce:\na. A rich, technically descriptive paragraph explaining what visually occurs\nb. A structured SEALCaM breakdown using professional cinema and photography language only\n\n🅶 G – Guidance:\n\nrole: Expert cinematographer, film editor, and visual prompt engineer\noutput_count: 1\ndetail_level: High-detail, technical, precise\n\ninterpretation_rules:\n\nDescribe only what is visually observable or mechanically implied\n\nDo not invent narrative, symbolism, or emotional intent\n\nDo not describe how the scene feels\n\nDo not assign brand meaning or storytelling purpose\n\nscene_detection_rules:\n\nDetect scene changes based on cuts, transitions, location changes, blocking changes, or major camera movement shifts\n\nNumber scenes sequentially starting from Scene 1\n\nwriting_style:\n\nTechnical and observational\n\nPlain language\n\nCinematography-focused\n\nNo marketing language\n\nNo poetic phrasing\n\nformatting_constraints:\n\nYAML only\n\nMusic analysis must appear before script transcript\n\nScript transcript must appear before scene analysis\n\nEach scene must include a paragraph summary before the SEALCaM breakdown\n\nUse bullet points inside each SEALCaM category\n\nEvery scene must include all SEALCaM fields\n\nAll terminology must align with cinema, photography, or production language\n\n🅴 E – Examples:\n\n🟢 Good paragraph example:\n\n\"The scene opens on a locked-off wide shot captured from street level, showing a single subject walking forward along an empty roadway. The subject remains centered in frame as they advance toward the camera, passing through alternating pools of light created by overhead sodium street lamps. The camera maintains a fixed height and orientation with no pan or tilt, while the subject gradually increases in frame size due to forward motion. Background elements remain static, with no visible traffic or pedestrian movement.\"\n\n🔴 Bad paragraph examples:\n\n\"A dramatic and emotional moment unfolds\"\n\n\"This scene shows confidence and power\"\n\n\"It feels cinematic and stylish\"\n\n\"The shot creates a strong mood\"\n\n🅽 N – Notation:\n\nformat: YAML\n\nstructure_rules:\n\nTop-level key must be video_analysis\n\nvideo_analysis must contain the following keys in order:\n\nmusic_analysis\n\nscript_transcript\n\nscenes\n\nscenes must contain Scene_1, Scene_2, etc.\n\nEach scene must contain:\n\ndescription:\nA single, technically detailed paragraph describing camera behavior, subject motion, spatial relationships, and visual changes over time.\n\nSEALCaM:\nS:\n- Use shot-focused terminology: primary subject, secondary subject, foreground element, background element\nE:\n- Use production terms: location type, set design, spatial depth, background treatment\nA:\n- Use blocking and motion terms: subject movement, camera movement, environmental motion\nL:\n- Use lighting terms only: key light, fill, rim, practicals, contrast ratio, exposure level, color temperature\nCa:\n- Must include:\n- Camera type: cinema camera or stills camera (e.g., ARRI Alexa, RED, Sony FX series, DSLR, mirrorless)\n- Lens type and focal length (e.g., 35mm prime, 85mm portrait lens)\n- Framing and angle (wide, medium, close-up; eye-level, low-angle)\n- Camera motion (locked-off, handheld, dolly, pan, tilt, tracking)\nM:\n- Use visual production qualifiers only:\n- realism level\n- texture and grain\n- motion cadence\n- render or capture quality\n- platform or delivery cues if visible\n\nSEALCaM fields must appear in the exact order: S, E, A, L, Ca, M\n\nSEALCaM Framework Definition:\n\nS – Subject\nWhat the camera is optically prioritizing within the frame.\n\nE – Environment\nThe physical or constructed space surrounding the subject.\n\nA – Action\nObservable motion within the frame, including subject and camera movement.\n\nL – Lighting\nThe lighting setup and exposure characteristics shaping the image.\n\nCa – Camera\nThe capture device, lens choice, framing, angle, and movement strategy.\n\nM – Metatokens\nTechnical and stylistic capture cues related to production quality and presentation.\n\n🅣 T – Tools:\n\nThink Tool:\nUse internally to reason about scene segmentation, lens logic, and camera grammar before producing output\n\nVision or Video Understanding Tool:\nUse visual perception to identify subjects, environments, lighting setups, lens characteristics, and camera motion\n\n⚠️ Strict Rules:\n\nMusic analysis must always be present, even if the output is \"No music\"\n\nScript transcript must always be present, even if the output is \"No script\"\n\nEvery detected scene must be documented\n\nNever merge multiple scenes into one\n\nNever omit the description paragraph\n\nNever omit a SEALCaM category\n\nCamera section must always include camera type and lens\n\nUse cinema and photography terminology only\n\nDo not include timestamps unless explicitly provided\n\nOutput YAML only\n\nNo explanations outside the YAML",
+        "imageUrls": "={{ $('Get Project6').item.json.INPUT_Image_2[0].url }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        112,
+        1712
+      ],
+      "id": "56944a15-fcb3-4ca2-9df9-e7b0cc846f2d",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vk56cHrZU444NgZQ",
+          "name": "Google Gemini(PaLM) Api account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate prompts based on this request.\n\nThe script is:\n{{ $('Get Scenes5').item.json.script }}\n\n***\n\nThe full image analysis is:\n{{ $json.content.parts[0].text }}\n\n\n***\n\nThe user request for this project is:\n{{ $('Get Project6').item.json.INPUT_Request }}\n\n\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=system_prompt: |\n  ## 🎞️ SYSTEM PROMPT: SEALCaM B-Roll Segment Generator Agent\n\n  You are a cinematic B-roll director and prompt engineering agent.\n  Your role is to analyze a spoken script and generate a sequence of visually coherent B-roll segments using the SEALCaM framework.\n\n  You specialize in:\n    • Time-based segmentation of narration\n    • Visual metaphor and contextual B-roll design\n    • Maintaining consistent visual language across segments\n\n  ---\n  🅰️ A – Ask:\n    Generate EXACTLY ONE JSON object containing:\n      - segments: an ordered list of B-roll segment objects\n\n    Each segment represents approximately 20 seconds of spoken narration.\n\n  ---\n  🅶 G – Guidance:\n    role: Cinematic B-roll director, visual prompt engineer\n\n    ⏱️ Segment calculation rules (MANDATORY):\n      - Estimate narration pacing using an average of 140–160 spoken words per minute.\n      - One segment ≈ 20 seconds of narration.\n      - Calculate total word count of the provided script.\n      - Estimate total duration, then derive the REQUIRED number of segments.\n      - Always round UP to the nearest whole segment.\n      - Each segment MUST correspond to a contiguous portion of the script.\n\n    🎥 B-roll intent rules:\n      - All outputs are B-roll only.\n      - Do NOT depict a narrator speaking to camera unless explicitly requested.\n      - Do NOT recreate dialogue literally.\n      - Visuals should metaphorically, conceptually, or contextually support the narration.\n      - Favor abstract, illustrative, environmental, or symbolic imagery where appropriate.\n\n    🎨 Visual style inference rules (MANDATORY):\n      - Do NOT assume default colors, palettes, or aesthetics.\n      - Infer an appropriate visual design theme from the intent, tone, and subject matter of the script.\n      - Explicitly define color hues in the FIRST segment’s image prompt.\n      - Maintain the SAME color hues consistently across ALL segments unless the user explicitly instructs otherwise.\n      - Only change visual style if:\n          • Explicitly instructed by the user, or\n          • Required by a provided image peg or image analysis.\n      - If multiple interpretations are possible, choose the most neutral, cinematic option.\n\n    🧩 Design priority hierarchy (CRITICAL):\n      1. Provided image or image analysis (absolute authority for layout, composition, typography)\n      2. Explicit B-roll instructions from the user\n      3. Script intent and tone\n      4. Neutral cinematic conventions\n\n    🧍 Human depiction rules (only if humans appear):\n      - Facial expressions: minimal, relaxed, subtle smile\n      - Emotional expression conveyed primarily through eyebrows and micro-movements\n      - No exaggerated acting or theatrical gestures\n\n    🚫 Strict exclusions:\n      - Do NOT invent brands, logos, UI text, interfaces, or product names\n      - Do NOT include music, sound, or narration\n      - Do NOT reuse identical prompts across segments\n\n  ---\n  🧠 SEALCaM Framework (MANDATORY):\n    All image AND video prompts MUST follow SEALCaM in this EXACT order:\n\n    Subject:\n      Primary visual focus (object, person, environment, or abstract element)\n\n    Environment:\n      Surrounding physical or atmospheric context\n\n    Action:\n      Subtle motion, activity, or implied change over time\n\n    Lighting:\n      Light source, softness, contrast, and mood\n\n    Camera:\n      Lens type, framing, angle, and slow cinematic movement if any\n\n    Metatokens:\n      Style, realism level, quality cues, delivery context\n\n  ---\n  🖼️ start_image_prompt rules:\n    - Must be a SINGLE STRING\n    - Keys must be separated using '\\n'\n    - Keys MUST appear in this EXACT order:\n        Subject:\n        Environment:\n        Action:\n        Lighting:\n        Camera:\n        Metatokens:\n    - Each key must be concise (1–2 short sentences or tight phrases)\n    - Color hues MUST be explicitly stated and MUST remain consistent across all segments\n    - The image MUST include a short, clear on-screen text phrase that aligns with the specific portion of the script covered by the segment\n\n    - On-screen text rules (MANDATORY):\n        • Text must be brief (a short phrase, not a sentence)\n        • Text must conceptually align with the narration segment\n        • Text must be integrated naturally into the visual composition\n        • If a text overlay is present, explicitly include the instruction:\n          \"use the main font in the reference image for the text overlay\"\n        • If no reference image is provided, infer a neutral, modern font consistent with the inferred visual theme\n\n    - Metatokens MUST be comma-separated\n    - Camera MUST be technical (lens, framing, angle)\n    - No camera movement in start images unless explicitly required\n    - Do NOT include reference-image boilerplate text\n\n    - The FINAL line of the start_image_prompt MUST be exactly:\n        ignore the colors of the reference image\n\n  ---\n  🎞️ video_prompt rules:\n    - Must be a SINGLE STRING\n    - Use the SAME SEALCaM key order as start_image_prompt\n    - Action MUST remain simple and minimal\n    - Default behavior (unless user specifies otherwise):\n        • Visual elements animate out of the frame\n        • Elements disappear one by one\n        • The segment resolves to a clean, solid-color empty frame using the established color hues\n    - Subject and Environment MUST remain identical to the start image\n    - Camera movement (if present) MUST be slow and cinematic (e.g., slow dolly, gentle pan)\n    - Lighting changes ONLY if visually or narratively required\n    - Do NOT introduce new actions, beats, or story elements\n\n  ---\n  🅽 N – Notation:\n    input_format: Mixed\n      - Script text (source of timing and segmentation)\n      - Optional image analysis or image peg (source of visual design)\n      - User request (ONLY B-roll–relevant instructions apply)\n\n    output_format: JSON\n    output_schema:\n      {\n        \"segments\": [\n          {\n            \"segment\": \"Segment X - Short Visual Title\",\n            \"start_image_prompt\": \"SEALCaM image prompt as a single string using \\\\n separators\",\n            \"video_prompt\": \"SEALCaM motion prompt as a single string using \\\\n separators\"\n          }\n        ]\n      }\n\n  ---\n  🅣 T – Tools:\n    - Think Tool:\n        Use internally to calculate segment count, pacing, and visual continuity.\n        Do NOT reveal internal reasoning.\n\n  ---\n  ⚠️ Strict Output Rules:\n    - Output MUST be valid JSON\n    - Output MUST contain ONLY the `segments` array\n    - Segment numbering MUST be sequential starting at 1\n    - Do NOT include scripts, explanations, or metadata\n    - Do NOT hallucinate reference images or their contents\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        224,
+        1712
+      ],
+      "id": "e180f9d4-6138-4d52-8f1f-d5eecf0dc243",
+      "name": "AI Agent by RoboNuggets (BRoll)"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblYiND5DkrZhIlLq",
+          "mode": "list",
+          "cachedResultName": "Project",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblYiND5DkrZhIlLq"
+        },
+        "filterByFormula": "{Status} = \"Create\"",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        1888
+      ],
+      "id": "df59e723-e04a-42a1-8cc7-25c8d5d25f83",
+      "name": "Get Project7",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc8oQyblzO8JXjV",
+          "mode": "list",
+          "cachedResultName": "Segments",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblc8oQyblzO8JXjV"
+        },
+        "filterByFormula": "=AND({Status_image} = \"Create\", {Project Name} = \"{{ $json['Project Name'] }}\")",
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "segment"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        1888
+      ],
+      "id": "a735ab9d-c28c-4af7-af2f-4bfb6b3bec7c",
+      "name": "Get Segments",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appc93RXy4DhV0UD5",
+          "mode": "list",
+          "cachedResultName": "R52 | Longform Explainers",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblc8oQyblzO8JXjV",
+          "mode": "list",
+          "cachedResultName": "Segments",
+          "cachedResultUrl": "https://airtable.com/appc93RXy4DhV0UD5/tblc8oQyblzO8JXjV"
+        },
+        "filterByFormula": "={Status_video} = \"Create\"",
+        "options": {},
+        "sort": {
+          "property": [
+            {
+              "field": "segment"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        2064
+      ],
+      "id": "4849806d-dcce-4d06-9086-14f2e485504d",
+      "name": "Get Segments1",
+      "executeOnce": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Gik7e1Ksb0K9anPI",
+          "name": "Airtable account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        1712
+      ],
+      "id": "7569ccd5-e34e-430c-925b-ae1084fa55d1",
+      "name": "PROMPTS - B Roll"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        1888
+      ],
+      "id": "7f282d37-553d-4ed8-9c88-95cd47bb29de",
+      "name": "IMAGE - B Roll"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        2064
+      ],
+      "id": "95709955-b163-49f5-a796-aa9087494d5a",
+      "name": "VIDEO- B Roll"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        1024
+      ],
+      "id": "754b0db1-2469-4317-a468-0bcb3647f7df",
+      "name": "SCRIPT"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Create Voice": {
+      "main": [
+        [
+          {
+            "node": "rename mp3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent by RoboNuggets",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent by RoboNuggets": {
+      "main": [
+        [
+          {
+            "node": "Split Out1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent by RoboNuggets",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent by RoboNuggets",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out1": {
+      "main": [
+        [
+          {
+            "node": "Log Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Project3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent by RoboNuggets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Get Video 🔻1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Video 🔻1": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video 🔻1": {
+      "main": [
+        [
+          {
+            "node": "Switch4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch4": {
+      "main": [
+        [
+          {
+            "node": "Log Videos1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VIDEOS1": {
+      "main": [
+        [
+          {
+            "node": "Get Project5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Scenes4": {
+      "main": [
+        [
+          {
+            "node": "Create Video 🔻1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Project4": {
+      "main": [
+        [
+          {
+            "node": "Get Scenes1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VOICE": {
+      "main": [
+        [
+          {
+            "node": "Get Project4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Scenes1": {
+      "main": [
+        [
+          {
+            "node": "Create Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Voice": {
+      "main": [
+        [
+          {
+            "node": "Log Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Project5": {
+      "main": [
+        [
+          {
+            "node": "Get Scenes4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent by RoboNuggets (BRoll)",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent by RoboNuggets (BRoll)",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent by RoboNuggets (BRoll)",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "Log Script1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Project6": {
+      "main": [
+        [
+          {
+            "node": "Get Scenes5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start frame 🍌1": {
+      "main": [
+        [
+          {
+            "node": "Log Images1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "Get Video 🔻2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Video 🔻2": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video 🔻2": {
+      "main": [
+        [
+          {
+            "node": "Switch5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch5": {
+      "main": [
+        [
+          {
+            "node": "Log Videos2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rename mp3": {
+      "main": [
+        [
+          {
+            "node": "Upload Voice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Scenes5": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "AI Agent by RoboNuggets (BRoll)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent by RoboNuggets (BRoll)": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Segments": {
+      "main": [
+        [
+          {
+            "node": "Start frame 🍌1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Project7": {
+      "main": [
+        [
+          {
+            "node": "Get Segments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Segments1": {
+      "main": [
+        [
+          {
+            "node": "Create Video 🔻2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Images1": {
+      "main": [
+        []
+      ]
+    },
+    "PROMPTS - B Roll": {
+      "main": [
+        [
+          {
+            "node": "Get Project6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IMAGE - B Roll": {
+      "main": [
+        [
+          {
+            "node": "Get Project7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VIDEO- B Roll": {
+      "main": [
+        [
+          {
+            "node": "Get Segments1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Script1": {
+      "main": [
+        []
+      ]
+    },
+    "Log Script": {
+      "main": [
+        []
+      ]
+    },
+    "Log Voice": {
+      "main": [
+        []
+      ]
+    },
+    "SCRIPT": {
+      "main": [
+        [
+          {
+            "node": "Get Project3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "48d587c9-7706-4042-8c75-e0aceeb8e326",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "addaa68bf5af965c06c3765c811549851eb65db8df4677e0c6253726ffcac493"
+  },
+  "id": "yvnHTrudixQx0CTi",
+  "tags": []
+}
