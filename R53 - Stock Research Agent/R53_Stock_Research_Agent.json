@@ -1,0 +1,351 @@
+{
+  "name": "R53 — Stock Research Agent (Telegram → Claude Code → Verdict)",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": ["message"],
+        "additionalFields": {}
+      },
+      "id": "r53-telegram-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [220, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_BOT_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      },
+      "notes": "Listens for all messages. Next node filters for $TICKER pattern."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract ticker from message like \"$LMAT\" or \"$AAPL check this\"\nconst message = $input.first().json.message?.text || '';\n\n// Match $TICKER pattern (1-5 uppercase letters after $)\nconst match = message.match(/\\$([A-Za-z]{1,5})/);\n\nif (!match) {\n  // Not a ticker message, stop the workflow\n  return [];\n}\n\nconst ticker = match[1].toUpperCase();\nconst chatId = $input.first().json.message?.chat?.id;\nconst fromUser = $input.first().json.message?.from?.first_name || 'Unknown';\nconst messageId = $input.first().json.message?.message_id;\n\n// Check for deep dive flag\nconst deepDive = message.toLowerCase().includes('deep') || message.toLowerCase().includes('full');\n\nreturn [{\n  json: {\n    ticker,\n    chatId,\n    fromUser,\n    messageId,\n    deepDive,\n    rawMessage: message,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "r53-extract-ticker",
+      "name": "Extract Ticker",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300],
+      "notes": "Extracts $TICKER from Telegram message. Returns empty array (stops workflow) if no ticker found."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=🔍 **Research started for ${{ $json.ticker }}**\n\nPulling SEC filings, analyzing financials, scanning news...\nThis takes 2-5 minutes. Verdict incoming.",
+        "additionalFields": {
+          "parse_mode": "Markdown",
+          "reply_to_message_id": "={{ $json.messageId }}"
+        }
+      },
+      "id": "r53-ack-message",
+      "name": "Send Acknowledgment",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [660, 180],
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_BOT_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      },
+      "notes": "Immediately acknowledges the request so user knows it's being processed."
+    },
+    {
+      "parameters": {
+        "command": "=cd /path/to/n8n-robonuggets-templates && claude --print --output-format json -p '/stock-first-pass {{ $json.ticker }}' 2>/dev/null | tail -1",
+        "cwd": "/path/to/n8n-robonuggets-templates"
+      },
+      "id": "r53-ssh-claude",
+      "name": "SSH → Claude Code",
+      "type": "n8n-nodes-base.ssh",
+      "typeVersion": 1,
+      "position": [660, 420],
+      "credentials": {
+        "sshPassword": {
+          "id": "SSH_CREDENTIAL_ID",
+          "name": "Claude Code Server SSH"
+        }
+      },
+      "notes": "SSHes to the machine running Claude Code CLI. Runs the stock-first-pass skill with the ticker. The --print flag makes it non-interactive. Output is JSON. Timeout: 10 minutes.\n\nCONFIGURATION NEEDED:\n- Replace /path/to/n8n-robonuggets-templates with actual repo path\n- SSH credentials must have access to the Claude Code machine\n- Claude Code CLI must be installed and authenticated on that machine\n- Increase SSH timeout to 600s (10 min) in n8n settings"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Claude Code JSON output\nconst sshOutput = $input.first().json.stdout || $input.first().json.stderr || '';\n\n// Find the JSON block in the output\nlet result;\ntry {\n  // Try to parse the last line (should be the JSON output)\n  const lines = sshOutput.trim().split('\\n');\n  \n  // Look for the JSON block - scan from end\n  for (let i = lines.length - 1; i >= 0; i--) {\n    const line = lines[i].trim();\n    if (line.startsWith('{')) {\n      // Found potential JSON start, try to find the end\n      let jsonStr = lines.slice(i).join('\\n');\n      try {\n        result = JSON.parse(jsonStr);\n        break;\n      } catch (e) {\n        // Try just this line\n        try {\n          result = JSON.parse(line);\n          break;\n        } catch (e2) {\n          continue;\n        }\n      }\n    }\n  }\n  \n  if (!result) {\n    throw new Error('No JSON found in output');\n  }\n} catch (error) {\n  // If parsing fails, create an error result\n  result = {\n    status: 'error',\n    ticker: $('Extract Ticker').first().json.ticker,\n    error: error.message,\n    raw_output: sshOutput.substring(0, 2000)\n  };\n}\n\n// Carry forward original context\nresult.chatId = $('Extract Ticker').first().json.chatId;\nresult.messageId = $('Extract Ticker').first().json.messageId;\nresult.fromUser = $('Extract Ticker').first().json.fromUser;\nresult.deepDive = $('Extract Ticker').first().json.deepDive;\n\nreturn [{ json: result }];"
+      },
+      "id": "r53-parse-output",
+      "name": "Parse Claude Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 420],
+      "notes": "Parses the JSON output from Claude Code. Handles edge cases where Claude outputs extra text before/after the JSON."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-success",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "complete",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "r53-check-status",
+      "name": "Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1100, 420],
+      "notes": "Routes based on whether Claude Code returned a successful result."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the Telegram message from Claude's research output\nconst data = $input.first().json;\n\n// Use the one_pager if available, otherwise build from parts\nlet message;\n\nif (data.one_pager) {\n  message = data.one_pager;\n} else {\n  // Fallback: build from structured data\n  const verdict = data.verdict || 'UNKNOWN';\n  const verdictEmoji = {\n    'BUY': '🟢',\n    'HOLD': '🟡', \n    'PASS': '🔴',\n    'DEEP_DIVE': '🔵'\n  }[verdict] || '⚪';\n  \n  message = `${verdictEmoji} **$${data.ticker} — ${data.company}**\\n`;\n  message += `**Verdict: ${verdict}** (${data.confidence} confidence)\\n\\n`;\n  message += `${data.thesis || 'No thesis generated.'}\\n\\n`;\n  \n  if (data.key_metrics) {\n    message += `**Key Metrics:**\\n`;\n    const m = data.key_metrics;\n    if (m.revenue_latest) message += `• Revenue: ${m.revenue_latest}\\n`;\n    if (m.revenue_growth) message += `• Rev Growth: ${m.revenue_growth}\\n`;\n    if (m.net_margin) message += `• Net Margin: ${m.net_margin}\\n`;\n    if (m.pe_ratio) message += `• P/E: ${m.pe_ratio}\\n`;\n    if (m.fcf_yield) message += `• FCF Yield: ${m.fcf_yield}\\n`;\n    message += `\\n`;\n  }\n  \n  if (data.insider_sentiment) {\n    message += `**Insider Sentiment:** ${data.insider_sentiment}\\n\\n`;\n  }\n  \n  if (data.catalysts && data.catalysts.length > 0) {\n    message += `**Catalysts:**\\n`;\n    data.catalysts.forEach(c => { message += `• ${c}\\n`; });\n    message += `\\n`;\n  }\n  \n  if (data.risks && data.risks.length > 0) {\n    message += `**Risks:**\\n`;\n    data.risks.forEach(r => { message += `• ${r}\\n`; });\n  }\n}\n\n// Telegram has a 4096 char limit\nif (message.length > 4000) {\n  message = message.substring(0, 3950) + '\\n\\n_(truncated — full report saved)_';\n}\n\nreturn [{\n  json: {\n    ...data,\n    telegramMessage: message\n  }\n}];"
+      },
+      "id": "r53-format-telegram",
+      "name": "Format Telegram Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1320, 300],
+      "notes": "Formats the research output into a Telegram-friendly message under 4096 chars."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.telegramMessage }}",
+        "additionalFields": {
+          "parse_mode": "Markdown",
+          "reply_to_message_id": "={{ $json.messageId }}"
+        }
+      },
+      "id": "r53-send-verdict",
+      "name": "Send Verdict",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1540, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_BOT_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      },
+      "notes": "Posts the research verdict back to the Telegram chat."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-deep-dive",
+              "leftValue": "={{ $json.deep_dive_needed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        }
+      },
+      "id": "r53-check-deep-dive",
+      "name": "Deep Dive?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1760, 300],
+      "notes": "Checks if verdict is DEEP_DIVE or if deep_dive_needed flag is true."
+    },
+    {
+      "parameters": {
+        "chatId": "ETHAN_TELEGRAM_CHAT_ID",
+        "text": "=🔵 **DEEP DIVE ALERT: ${{ $json.ticker }}**\n\n{{ $json.thesis }}\n\nVerdict: {{ $json.verdict }} ({{ $json.confidence }})\n\nFull report + model saved. Review when ready.\n\n_Triggered by {{ $json.fromUser }}_",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "r53-dm-ethan",
+      "name": "DM Ethan (Deep Dive)",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1980, 180],
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_BOT_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      },
+      "notes": "DMs Ethan directly when a DEEP_DIVE verdict is triggered.\n\nCONFIGURATION: Replace ETHAN_TELEGRAM_CHAT_ID with Ethan's actual Telegram chat ID."
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "=❌ **Research failed for ${{ $json.ticker }}**\n\nError: {{ $json.error || 'Unknown error' }}\n\nRaw output (first 500 chars):\n```\n{{ ($json.raw_output || '').substring(0, 500) }}\n```",
+        "additionalFields": {
+          "parse_mode": "Markdown",
+          "reply_to_message_id": "={{ $json.messageId }}"
+        }
+      },
+      "id": "r53-send-error",
+      "name": "Send Error",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1320, 540],
+      "credentials": {
+        "telegramApi": {
+          "id": "TELEGRAM_BOT_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      },
+      "notes": "Sends error message back to Telegram if research fails."
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Ticker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Ticker": {
+      "main": [
+        [
+          {
+            "node": "Send Acknowledgment",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "SSH → Claude Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Acknowledgment": {
+      "main": [
+        []
+      ]
+    },
+    "SSH → Claude Code": {
+      "main": [
+        [
+          {
+            "node": "Parse Claude Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Claude Output": {
+      "main": [
+        [
+          {
+            "node": "Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success?": {
+      "main": [
+        [
+          {
+            "node": "Format Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Send Verdict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Verdict": {
+      "main": [
+        [
+          {
+            "node": "Deep Dive?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deep Dive?": {
+      "main": [
+        [
+          {
+            "node": "DM Ethan (Deep Dive)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionTimeout": 700,
+    "saveManualExecutions": true,
+    "saveExecutionProgress": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "Stock Research",
+      "id": "stock-research"
+    },
+    {
+      "name": "Telegram",
+      "id": "telegram"
+    },
+    {
+      "name": "Claude Code",
+      "id": "claude-code"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2026-04-12T00:00:00.000Z",
+  "versionId": "r53-v1"
+}

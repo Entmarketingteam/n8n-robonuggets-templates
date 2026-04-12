@@ -19,6 +19,7 @@ All RoboNuggets R-series and n-series n8n workflow templates, organized into fol
 | `n12 - Blotato Node/` | n12 | Blotato custom n8n node — required for Instagram posting in R49 and others | — |
 | `n28 - Nanobanana/` | n28 | Image creation + analysis agent (PromptRobo) — standard and Pro variants | 20 |
 | `n29 Templates/` | n29 | Content repurposing via Telegram: TikTok→Sora video, YT Long→LI/X post, YT Short→Script | 7–16 |
+| `R53 - Stock Research Agent/` | R53 | Autonomous stock research — Telegram trigger → Claude Code → SEC EDGAR + web → verdict | 10 |
 
 ---
 
@@ -53,10 +54,12 @@ n4  (Downloader/Uploader) ←── used by n29, R50 pipelines
 | n12 | Blotato API key |
 | n28 | OpenAI, Telegram Bot |
 | n29 | Telegram Bot, OpenAI, Sora API (workflow 1), LinkedIn + X (workflow 2) |
+| R53 | Telegram Bot, SSH to Claude Code machine, Anthropic API (on remote) |
 
 ---
 
 ## Notes
 - R-series = full production systems (21–56 nodes)
 - n-series = focused single-purpose agents (2–20 nodes)
+- R53 uses a Claude Code project skill (`.claude/commands/stock-first-pass.md`) for autonomous research
 - Each folder has a `CLAUDE.md` — open the folder in Claude Code for full context
