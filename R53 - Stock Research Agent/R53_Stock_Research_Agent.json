@@ -54,8 +54,7 @@
     },
     {
       "parameters": {
-        "command": "=cd /path/to/n8n-robonuggets-templates && claude --print --output-format json -p '/stock-first-pass {{ $json.ticker }}' 2>/dev/null | tail -1",
-        "cwd": "/path/to/n8n-robonuggets-templates"
+        "command": "=ssh ethan@dev-machine 'cd {{$env.RESEARCH_REPO_PATH || \"/repo/research\"}} && doppler run -- claude --print -p \"/stock-first-pass {{ $json.ticker }}\" --output-format json'"
       },
       "id": "r53-ssh-claude",
       "name": "SSH → Claude Code",
@@ -68,7 +67,7 @@
           "name": "Claude Code Server SSH"
         }
       },
-      "notes": "SSHes to the machine running Claude Code CLI. Runs the stock-first-pass skill with the ticker. The --print flag makes it non-interactive. Output is JSON. Timeout: 10 minutes.\n\nCONFIGURATION NEEDED:\n- Replace /path/to/n8n-robonuggets-templates with actual repo path\n- SSH credentials must have access to the Claude Code machine\n- Claude Code CLI must be installed and authenticated on that machine\n- Increase SSH timeout to 600s (10 min) in n8n settings"
+      "notes": "SSHes to dev machine running Claude Code CLI. Uses Doppler for secrets.\n\nOption A: SSH to Ethan's dev machine (default)\nOption B: SSH to DO droplet (for prod — works when laptop is closed)\nOption C: Route via Hermes Agent gateway (future)\n\nCONFIG:\n- Set RESEARCH_REPO_PATH env var (or defaults to /repo/research)\n- SSH credentials must reach the Claude Code machine\n- Increase SSH timeout to 600s in n8n settings"
     },
     {
       "parameters": {
@@ -112,7 +111,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Build the Telegram message from Claude's research output\nconst data = $input.first().json;\n\n// Use the one_pager if available, otherwise build from parts\nlet message;\n\nif (data.one_pager) {\n  message = data.one_pager;\n} else {\n  // Fallback: build from structured data\n  const verdict = data.verdict || 'UNKNOWN';\n  const verdictEmoji = {\n    'BUY': '🟢',\n    'HOLD': '🟡', \n    'PASS': '🔴',\n    'DEEP_DIVE': '🔵'\n  }[verdict] || '⚪';\n  \n  message = `${verdictEmoji} **$${data.ticker} — ${data.company}**\\n`;\n  message += `**Verdict: ${verdict}** (${data.confidence} confidence)\\n\\n`;\n  message += `${data.thesis || 'No thesis generated.'}\\n\\n`;\n  \n  if (data.key_metrics) {\n    message += `**Key Metrics:**\\n`;\n    const m = data.key_metrics;\n    if (m.revenue_latest) message += `• Revenue: ${m.revenue_latest}\\n`;\n    if (m.revenue_growth) message += `• Rev Growth: ${m.revenue_growth}\\n`;\n    if (m.net_margin) message += `• Net Margin: ${m.net_margin}\\n`;\n    if (m.pe_ratio) message += `• P/E: ${m.pe_ratio}\\n`;\n    if (m.fcf_yield) message += `• FCF Yield: ${m.fcf_yield}\\n`;\n    message += `\\n`;\n  }\n  \n  if (data.insider_sentiment) {\n    message += `**Insider Sentiment:** ${data.insider_sentiment}\\n\\n`;\n  }\n  \n  if (data.catalysts && data.catalysts.length > 0) {\n    message += `**Catalysts:**\\n`;\n    data.catalysts.forEach(c => { message += `• ${c}\\n`; });\n    message += `\\n`;\n  }\n  \n  if (data.risks && data.risks.length > 0) {\n    message += `**Risks:**\\n`;\n    data.risks.forEach(r => { message += `• ${r}\\n`; });\n  }\n}\n\n// Telegram has a 4096 char limit\nif (message.length > 4000) {\n  message = message.substring(0, 3950) + '\\n\\n_(truncated — full report saved)_';\n}\n\nreturn [{\n  json: {\n    ...data,\n    telegramMessage: message\n  }\n}];"
+        "jsCode": "// Build the Telegram message from Claude's research output\nconst data = $input.first().json;\n\n// Use the one_pager if available, otherwise build from parts\nlet message;\n\nif (data.one_pager) {\n  message = data.one_pager;\n} else {\n  // Fallback: build from structured data\n  const verdict = data.verdict || 'UNKNOWN';\n  const verdictEmoji = {\n    'KILL': '🔴',\n    'PARK': '🟡',\n    'DEEP_DIVE': '🔵'\n  }[verdict] || '⚪';\n  \n  message = `${verdictEmoji} **$${data.ticker} — ${data.company}**\\n`;\n  message += `**Verdict: ${verdict}**\\n\\n`;\n  message += `${data.one_liner || 'No thesis generated.'}\\n\\n`;\n  \n  if (data.key_metrics) {\n    message += `**Key Metrics:**\\n`;\n    const m = data.key_metrics;\n    if (m.revenue_ltm) message += `• Revenue (LTM): ${m.revenue_ltm}\\n`;\n    if (m.revenue_growth) message += `• Rev Growth: ${m.revenue_growth}\\n`;\n    if (m.gross_margin) message += `• Gross Margin: ${m.gross_margin}\\n`;\n    if (m.fcf_margin) message += `• FCF Margin: ${m.fcf_margin}\\n`;\n    if (m.net_cash_or_debt) message += `• Net Cash/Debt: ${m.net_cash_or_debt}\\n`;\n    if (m.insider_ownership_pct) message += `• Insider Own: ${m.insider_ownership_pct}\\n`;\n    message += `\\n`;\n  }\n  \n  if (data.insider_sentiment) {\n    message += `**Insider Sentiment:** ${data.insider_sentiment}\\n\\n`;\n  }\n  \n  if (data.catalysts && data.catalysts.length > 0) {\n    message += `**Catalysts:**\\n`;\n    data.catalysts.forEach(c => { message += `• ${c}\\n`; });\n    message += `\\n`;\n  }\n  \n  if (data.risks && data.risks.length > 0) {\n    message += `**Risks:**\\n`;\n    data.risks.forEach(r => { message += `• ${r}\\n`; });\n  }\n  \n  if (data.next_questions && data.next_questions.length > 0 && verdict === 'DEEP_DIVE') {\n    message += `\\n**Next Questions:**\\n`;\n    data.next_questions.forEach(q => { message += `• ${q}\\n`; });\n  }\n}\n\n// Append file paths\nif (data.files && data.files.length > 0) {\n  message += `\\n📁 ${data.files.join(', ')}\\n`;\n}\n\n// Telegram has a 4096 char limit\nif (message.length > 4000) {\n  message = message.substring(0, 3950) + '\\n\\n_(truncated — full report saved)_';\n}\n\nreturn [{\n  json: {\n    ...data,\n    telegramMessage: message\n  }\n}];"
       },
       "id": "r53-format-telegram",
       "name": "Format Telegram Message",
@@ -175,7 +174,7 @@
     {
       "parameters": {
         "chatId": "ETHAN_TELEGRAM_CHAT_ID",
-        "text": "=🔵 **DEEP DIVE ALERT: ${{ $json.ticker }}**\n\n{{ $json.thesis }}\n\nVerdict: {{ $json.verdict }} ({{ $json.confidence }})\n\nFull report + model saved. Review when ready.\n\n_Triggered by {{ $json.fromUser }}_",
+        "text": "=🔵 **DEEP DIVE ALERT: ${{ $json.ticker }}**\n\n{{ $json.one_liner }}\n\nFiles in theses/{{ $json.ticker }}/\n\n_Triggered by {{ $json.fromUser }}_",
         "additionalFields": {
           "parse_mode": "Markdown"
         }

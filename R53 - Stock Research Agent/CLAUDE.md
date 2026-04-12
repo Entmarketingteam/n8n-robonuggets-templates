@@ -1,130 +1,106 @@
 # R53 — Stock Research Agent
 
-Fully autonomous stock research pipeline: Telegram trigger → Claude Code → SEC EDGAR + web research → Markdown report + financial model → Telegram verdict.
+Fully autonomous stock research pipeline. Drop a ticker in Telegram, get a KILL/PARK/DEEP_DIVE verdict on your phone.
+
+**Core question:** "Does this name deserve another 5+ hours of my time?" Most names should die at first pass. Killing fast IS the value.
 
 ## Architecture
 
 ```
 Telegram "$LMAT"
      ↓
-n8n catches it → SSHes to Claude Code → triggers stock-first-pass skill
+n8n catches it → SSHes to Claude Code → triggers /stock-first-pass skill
      ↓
-Skill autonomously:
-  • Pulls 10-K + 10-Qs + 8-Ks + Form 4s + 13F + DEF 14A from SEC EDGAR
-  • Web searches competitors + news + analyst ratings
-  • Builds Markdown report + CSV financial model
-  • Updates _tracker.csv (atomic rename, no corruption)
+Skill autonomously (via EdgarTools MCP + web search):
+  1. Resolves ticker → pulls XBRL company facts
+  2. Fetches 10-K, 10-Q, 8-K, Form 4, 13F, DEF 14A
+  3. Web searches competitors, news, analyst ratings
+  4. Builds 1-pager (phone-scannable, in chat)
+  5. Writes full report (5 lenses + verdict) → theses/[TICKER]/report.md
+  6. Builds Excel financial model → theses/[TICKER]/model.xlsx
+  7. Assembles NotebookLM source bundle → theses/[TICKER]/notebooklm.md
+  8. Updates thesis tracker (atomic CSV upsert)
+  9. Outputs JSON for n8n
      ↓
-n8n reads JSON output → posts 1-pager + verdict back to Telegram
+n8n posts 1-pager + verdict to Telegram
      ↓
-If DEEP_DIVE verdict → DMs Ethan
+If DEEP_DIVE → DMs Ethan with thesis + next questions
 ```
 
 ## Files
 
 | File | Purpose |
 |------|---------|
-| `R53_Stock_Research_Agent.json` | n8n workflow (import this) — 10 nodes |
-| `scripts/sec_edgar.py` | Python helper for SEC EDGAR API (optional, skill can use WebFetch directly) |
-| `_tracker.csv` | Research tracker — all tickers researched with verdicts |
-| `reports/` | Generated Markdown reports (one per ticker per date) |
-| `models/` | Generated CSV financial models (one per ticker per date) |
+| `R53_Stock_Research_Agent.json` | n8n workflow — import into n8n cloud |
+| `scripts/sec_edgar.py` | SEC EDGAR API helper (fallback if EdgarTools MCP unavailable) |
+| `scripts/tracker_upsert.py` | Atomic CSV upsert with history archiving |
+| `theses/_tracker.csv` | Master thesis tracker — all tickers with verdicts |
+| `theses/[TICKER]/` | Per-ticker output (report.md, model.xlsx, notebooklm.md, history.csv) |
+| `references/edgartools-cheatsheet.md` | Exact EdgarTools MCP tool calls for each data point |
+| `references/thesis-tracker.md` | Tracker schema, update rules, query examples |
+| `references/n8n-blueprint.md` | Full n8n architecture + execution options (SSH/DO/Hermes) |
+| `references/install.md` | Ethan's 30-minute setup guide (Windows-friendly) |
 
 ## Claude Code Skill
 
-The core brain lives at `.claude/commands/stock-first-pass.md` (project-level command).
+The skill lives at `.claude/commands/stock-first-pass.md` (project-level command).
 
-**Invoke:** `claude -p '/stock-first-pass LMAT'` or from n8n via SSH.
+**Invoke:** `/stock-first-pass LMAT` or `first pass on $LMAT`
 
-### What it does (7 phases):
-1. **CIK Lookup** — Resolves ticker to SEC CIK via EDGAR API
-2. **Pull SEC Filings** — 10-K, 10-Q, 8-K, Form 4, 13F, DEF 14A
-3. **Web Research** — Competitors, analyst ratings, news, catalysts
-4. **Build Report** — Full Markdown report with 10 sections
-5. **Build Model** — CSV financial model with 3yr history + 2yr estimates
-6. **Update Tracker** — Atomic CSV append (write tmp → rename)
-7. **Output JSON** — Structured JSON for n8n to parse and post
+### Verdicts (pick exactly one):
+- **KILL** — doesn't meet bar. Which lens failed? Don't revisit.
+- **PARK** — interesting but waiting for X. Set review date + trigger.
+- **DEEP_DIVE** — worth 5+ hours. Name the 3 questions to answer next.
 
-### Verdicts:
-- **BUY** — Clear opportunity at current levels
-- **HOLD** — Good company, not compelling entry
-- **PASS** — Not interesting, move on
-- **DEEP_DIVE** — Interesting enough for full deep-dive model + thesis
+If >30% of names get DEEP_DIVE, the bar is too low.
 
-## n8n Workflow Nodes
+### 4 outputs every run:
+1. **1-pager** — phone-scannable, in chat
+2. **Full report** — 5 lenses (business/moat, industry, financials, management, risks) + verdict
+3. **Excel model** — 4 sheets (historicals, ratios, quick valuation, insiders)
+4. **NotebookLM bundle** — verified URLs for deep reading
 
-```
-[Telegram Trigger] → [Extract Ticker] → [Send Ack] (parallel)
-                                       → [SSH → Claude Code]
-                                          → [Parse Claude Output]
-                                             → [Success?]
-                                                ├─ YES → [Format Message] → [Send Verdict] → [Deep Dive?]
-                                                │                                              ├─ YES → [DM Ethan]
-                                                │                                              └─ NO  → (done)
-                                                └─ NO  → [Send Error]
-```
+### Data sources (priority order):
+1. EdgarTools MCP (primary — structured XBRL, filings, 13F, Form 4)
+2. web_search / web_fetch (competitors, news, non-US names)
+3. sec_edgar.py fallback (if MCP unavailable)
 
-## Setup & Configuration
+## Stack
 
-### 1. n8n Credentials Needed
-- **Telegram Bot** — Bot token from @BotFather
-- **SSH** — Credentials to the machine running Claude Code CLI
+- **n8n cloud** at `entagency.app.n8n.cloud`
+- **Doppler** for secrets (`ent-agency-automation` project, `stock-bot` config)
+- **Claude Code CLI** on execution machine
+- **EdgarTools MCP** for SEC data
+- **Telegram Bot** for input/output
 
-### 2. Doppler Environment Variables
-These should be configured in Doppler and available to the Claude Code machine:
+## Quick Start
 
-| Variable | Purpose |
-|----------|---------|
-| `ANTHROPIC_API_KEY` | Claude API key for Claude Code |
-| `SEC_EDGAR_USER_AGENT` | Custom User-Agent for SEC (optional, has default) |
+See `references/install.md` for the full 30-minute setup.
 
-### 3. Workflow Configuration (replace placeholders)
-- `TELEGRAM_BOT_CREDENTIAL_ID` — Your n8n Telegram credential ID
-- `SSH_CREDENTIAL_ID` — Your n8n SSH credential ID  
-- `ETHAN_TELEGRAM_CHAT_ID` — Ethan's Telegram user ID for deep dive DMs
-- `/path/to/n8n-robonuggets-templates` — Actual path to this repo on the Claude Code machine
-
-### 4. SSH Machine Requirements
-- Claude Code CLI installed and authenticated (`claude` command available)
-- This repo cloned
-- Python 3.10+ (for sec_edgar.py helper, optional)
-- Internet access to SEC EDGAR and web search
-
-## SEC EDGAR API Notes
-
-- **Rate limit:** 10 req/sec (script enforces 5/sec to be safe)
-- **User-Agent required:** SEC blocks requests without a proper User-Agent
-- **CIK lookup:** `https://www.sec.gov/files/company_tickers.json`
-- **Submissions:** `https://data.sec.gov/submissions/CIK{padded_cik}.json`
-- **XBRL facts:** `https://data.sec.gov/api/xbrl/companyfacts/CIK{padded_cik}.json`
-- **Filings archive:** `https://www.sec.gov/Archives/edgar/data/{cik}/`
-
-## Usage
-
-### From Telegram
-Just send `$LMAT` (or any ticker with $ prefix) in the configured Telegram chat.
-
-### Manual CLI
 ```bash
-# Run the skill directly
+# Test the skill directly
 claude -p '/stock-first-pass LMAT'
 
-# Run just the SEC helper
+# Test the SEC helper
 python3 scripts/sec_edgar.py LMAT --output summary
-python3 scripts/sec_edgar.py LMAT --output json --save reports/LMAT_raw.json
+
+# Test the tracker
+python3 scripts/tracker_upsert.py --ticker LMAT --company "LeMaitre Vascular" \
+    --verdict DEEP_DIVE --one-liner "Niche vascular devices"
 ```
 
-## Output Example
+## Future Extensions
 
-The skill outputs JSON that n8n parses:
-```json
-{
-  "status": "complete",
-  "ticker": "LMAT",
-  "verdict": "DEEP_DIVE",
-  "confidence": "HIGH",
-  "thesis": "Niche medical device company with 80%+ gross margins...",
-  "one_pager": "...(Telegram-formatted markdown)...",
-  "deep_dive_needed": true
-}
-```
+1. **Daily review cron** — 7am: re-run PARK names past their review date
+2. **EdgarTools live monitor** — real-time 8-K/Form 4 alerts on DEEP_DIVE tickers
+3. **Weekly digest** — Sunday pipeline summary
+4. **Voice memo input** — Whisper → ticker extraction → verdict by end of gym set
+
+## Note on Repo Organization
+
+This system is architected to work as a standalone repo. If/when it graduates from this template library, the portable pieces are:
+- `.claude/commands/stock-first-pass.md` (the skill)
+- `scripts/` (helper scripts)
+- `references/` (documentation)
+- `theses/` (output directory + tracker)
+- The n8n workflow JSON imports independently
